@@ -1,62 +1,94 @@
-# Apps Manager
+<div align="center">
 
-One small window to see, update and remove every program on Windows.
-No background service, no telemetry, one exe and one HTML page.
+# 🧩 Apps Manager
 
-**Languages:** [English](#english) · [Français](#français) · [العربية](#العربية)
+**See, update and remove every program on Windows — in one small window.**
+
+[![Version](https://img.shields.io/badge/version-1.1-2ea44f?style=flat-square)](version.json)
+[![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D6?style=flat-square&logo=windows&logoColor=white)](#requirements)
+[![.NET](https://img.shields.io/badge/.NET%20Framework-4.8-512BD4?style=flat-square&logo=dotnet&logoColor=white)](#requirements)
+[![winget](https://img.shields.io/badge/powered%20by-winget-00A4EF?style=flat-square)](#how-updates-work)
+[![UI](https://img.shields.io/badge/UI-HTML%20%2B%20C%23-E34F26?style=flat-square&logo=html5&logoColor=white)](#repository-layout)
+![Languages](https://img.shields.io/badge/EN%20%7C%20FR%20%7C%20AR-8957e5?style=flat-square)
+
+**English** · [Français](README.fr.md) · [العربية](README.ar.md)
+
+[![Download Lite](https://img.shields.io/badge/%E2%AC%87%20Download%20Lite-2.4%20MB-2ea44f?style=for-the-badge)](https://github.com/youcef07dz/apps-manager-windows/raw/main/releases/AppsManager-Setup-1.1-Lite.exe)
+[![Download Full](https://img.shields.io/badge/%E2%AC%87%20Download%20Full-59%20MB-1f6feb?style=for-the-badge)](https://github.com/youcef07dz/apps-manager-windows/raw/main/releases/AppsManager-Setup-1.1-Full.exe)
+
+<img src="assets/app.png" alt="Apps Manager screenshot" width="880">
+
+</div>
 
 ---
 
-## English
+## Contents
 
-### What it is
+- 🧭 [What it is](#what-it-is)
+- ✨ [Features](#features)
+- ✅ [Requirements](#requirements)
+- 📥 [Install](#install)
+- 🖱️ [Use](#use)
+- 🔄 [How updates work](#how-updates-work)
+- 🛠️ [Build from source](#build-from-source)
+- 🗂️ [Repository layout](#repository-layout)
+
+## What it is
 
 Apps Manager is a native Windows desktop app that lists everything installed on the PC
-and lets you uninstall it, update it through winget, or install something new from the
-winget catalog. It uses a single .NET exe plus one HTML page, so it starts fast and
-stays light on RAM and CPU.
+and lets you uninstall it, update it through **winget**, or install something new from
+the winget catalog. One .NET exe plus one HTML page: it starts fast, stays light on RAM
+and CPU, and has **no background service and no telemetry**.
 
-### Features
+## Features
 
-- Installed programs with version, publisher, install date and **real folder size**
-- Uninstall, run, open install folder, copy path, open registry key
-- Update one app or **Update all** through winget
-- **Check updates** against the winget catalog; ignored updates stay ignored
-- **App installer** tab: search winget and install packages without leaving the app
-- **Microsoft** tab (Store and system components) and **Missing** tab
-- Startup column: shows which programs start at sign-in
-- Export the list to CSV (safe for Excel)
-- Search, publisher filter, sortable columns, light/dark theme
-- Interface in **English, French and Arabic**
-- Self-update from the title bar: downloads the new setup with aria2c, checks its
-  SHA-256, then runs it
-- winget ships packed and is unpacked on first use, so the app takes less disk
+- 📋 **Inventory** — every installed program with version, publisher, install date and
+  the **real folder size** on disk.
+- 🧹 **Cleanup** — uninstall, run, open the install folder, copy the path, open the
+  registry key, all from the row menu.
+- 🔄 **Updates** — update one app or **Update all** through winget, with a
+  **Check updates** pass against the catalog. Ignored updates stay ignored.
+- 🛍️ **App installer** — search winget and install packages without leaving the app.
+- 🪟 **Microsoft** tab (Store and system components) and **Missing** tab for entries
+  whose folder no longer exists.
+- 🚀 **Startup column** — shows which programs launch when you sign in.
+- 📤 **Export** — save the list to CSV, safe to open in Excel.
+- 🔎 **Search**, publisher filter, sortable columns, light/dark theme.
+- 🌍 **English, French and Arabic** interface.
+- ⬆️ **Self-update** from the title bar: downloads the new setup with aria2c,
+  verifies its SHA-256, then runs it.
+- 📦 **Packed winget** — ships compressed and is unpacked on first use, saving disk.
 
-### Requirements
+## Requirements
 
-- Windows 10 version 1809 (build 17763) or later.
-- .NET Framework 4.8 (already installed on up-to-date Windows 10/11).
-- Internet only for updates, installs and catalog checks.
+| | |
+| --- | --- |
+| **OS** | Windows 10 version 1809 (build 17763) or later |
+| **Runtime** | .NET Framework 4.8 (already present on updated Windows 10/11) |
+| **Internet** | only for updates, installs and catalog checks |
 
-### Install
+## Install
 
-1. Download the setup from the [releases](releases) folder:
-   - **Lite** (about 2.4 MB): downloads winget when you first need it.
-   - **Full** (about 59 MB): includes packed winget, works offline.
-2. Run it and follow the wizard. It installs to `C:\Program Files\Apps Manager`
-   and asks for administrator rights once.
+| Build | Size | winget | Best for |
+| --- | --- | --- | --- |
+| 🟢 **Lite** | 2.4 MB | downloads on first use | small download, online PC |
+| 🔵 **Full** | 59 MB | packed, works offline | no internet, many PCs |
+
+1. Download the setup above or from the [releases](releases) folder.
+2. Run it and follow the wizard. It installs to `C:\Program Files\Apps Manager` and
+   asks for administrator rights once.
 3. Start **Apps Manager** from the Start menu or the desktop shortcut.
 
-### Use
+## Use
 
-- The tabs on the left switch between All programs, Updates, Microsoft, Missing and
-  App installer.
+- The tabs on the left switch between **All programs**, **Updates**, **Microsoft**,
+  **Missing** and **App installer**.
 - Click a row for details; right-click for the action menu.
-- **Sizes** measures the real folder of every program. It can take a minute; cancel
-  any time.
+- **Sizes** measures the real folder of every program. It can take a minute and can be
+  cancelled at any time.
 - **Check update** in the title bar updates Apps Manager itself.
 
-### How updates work
+## How updates work
 
 `version.json` in this repo is the update feed:
 
@@ -64,16 +96,19 @@ stays light on RAM and CPU.
 {
   "version": "1.1",
   "url": "https://raw.githubusercontent.com/youcef07dz/apps-manager-windows/main/releases/AppsManager-Setup-1.1-Lite.exe",
-  "sha256": "435e621a0b521b7a8ca75dee9142fbceae4ed244bce74aaebcef10d11a0dab10",
-  "size": 2425406
+  "sha256": "8555d6b4fac37b1375c214b750595a985777d7f6f2044ff8ba3be218881849cd",
+  "size": 2425669
 }
 ```
 
-The app accepts only HTTPS links, requires a 64-character SHA-256, and deletes the
-downloaded file if the hash does not match. To publish a new version, build it, copy
-the setup into `releases/`, update `version.json`, and run `push.cmd`.
+- The app accepts only **HTTPS** links.
+- A 64-character **SHA-256** is required.
+- The downloaded file is **deleted** if the hash does not match.
 
-### Build from source
+The feed points at the Lite setup. To publish a new version: build it, copy both setups
+into `releases/`, update `version.json`, then run `push.cmd`.
+
+## Build from source
 
 Needs the .NET Framework compiler and Inno Setup 5.6 in `C:\inno`.
 
@@ -84,7 +119,7 @@ src\build-setup.cmd    :: installers  -> src\dist\
 push.cmd               :: commit and push everything to GitHub
 ```
 
-### Repository layout
+## Repository layout
 
 | Path | What it is |
 | --- | --- |
@@ -99,123 +134,10 @@ push.cmd               :: commit and push everything to GitHub
 
 ---
 
-## Français
+<div align="center">
 
-### C'est quoi
+**English** · [Français](README.fr.md) · [العربية](README.ar.md)
 
-Apps Manager est une application Windows native qui liste tout ce qui est installé
-sur le PC et permet de désinstaller, mettre à jour avec winget, ou installer de
-nouveaux programmes depuis le catalogue winget. Un seul exe .NET et une page HTML :
-démarrage rapide, peu de RAM et de CPU.
-
-### Fonctions
-
-- Liste des programmes avec version, éditeur, date d'installation et **taille réelle**
-- Désinstaller, lancer, ouvrir le dossier, copier le chemin, ouvrir la clé de registre
-- Mettre à jour un programme ou **Tout mettre à jour** avec winget
-- **Vérifier les mises à jour** via le catalogue winget, avec mises à jour ignorées
-- Onglet **App installer** : chercher et installer des paquets winget
-- Onglets **Microsoft** (Store et composants système) et **Manquants**
-- Colonne démarrage : quels programmes se lancent à l'ouverture de session
-- Export CSV compatible Excel
-- Recherche, filtre par éditeur, colonnes triables, thème clair/sombre
-- Interface en **anglais, français et arabe**
-- Mise à jour de l'application depuis la barre de titre : téléchargement avec aria2c,
-  vérification SHA-256, puis lancement du programme d'installation
-- winget est livré compressé et décompressé à la première utilisation
-
-### Configuration requise
-
-- Windows 10 version 1809 (build 17763) ou plus.
-- .NET Framework 4.8 (déjà présent sur Windows 10/11 à jour).
-- Internet uniquement pour les mises à jour, installations et vérifications.
-
-### Installation
-
-1. Téléchargez le setup dans [releases](releases) :
-   - **Lite** (environ 2,4 Mo) : télécharge winget au premier besoin.
-   - **Full** (environ 59 Mo) : contient winget compressé, fonctionne hors ligne.
-2. Lancez-le et suivez l'assistant. Il s'installe dans `C:\Program Files\Apps Manager`
-   et demande les droits administrateur une fois.
-3. Ouvrez **Apps Manager** depuis le menu Démarrer ou le raccourci du bureau.
-
-### Utilisation
-
-- Les onglets à gauche passent de Tous les programmes à Mises à jour, Microsoft,
-  Manquants et App installer.
-- Cliquez une ligne pour les détails ; clic droit pour le menu d'actions.
-- **Tailles** mesure le dossier réel de chaque programme. Cela peut prendre une
-  minute ; annulable à tout moment.
-- **Vérifier la mise à jour** dans la barre de titre met à jour Apps Manager.
-
-### Compiler
-
-```bat
-src\build.cmd          :: exe 64 bits -> src\bin\AppsManager.exe
-src\build.cmd x86      :: exe 32 bits -> src\bin\x86\AppsManager.exe
-src\build-setup.cmd    :: installateurs -> src\dist\
-push.cmd               :: commit et envoi sur GitHub
-```
-
----
-
-## العربية
-
-<div dir="rtl">
-
-### ما هو التطبيق
-
-Apps Manager تطبيق سطح مكتب أصلي لنظام ويندوز يعرض كل البرامج المثبّتة على الجهاز،
-ويتيح إزالة تثبيتها أو تحديثها عبر winget أو تثبيت برامج جديدة من كتالوج winget.
-يتكوّن من ملف exe واحد (.NET) وصفحة HTML واحدة، لذلك يبدأ بسرعة ويستهلك ذاكرة
-ومعالجًا قليلين.
-
-### المزايا
-
-- قائمة البرامج مع الإصدار والناشر وتاريخ التثبيت و**الحجم الحقيقي للمجلد**
-- إزالة التثبيت، التشغيل، فتح مجلد التثبيت، نسخ المسار، فتح مفتاح التسجيل
-- تحديث برنامج واحد أو **تحديث الكل** عبر winget
-- **التحقق من التحديثات** مقابل كتالوج winget، مع تجاهل التحديثات التي تختارها
-- تبويب **مثبّت التطبيقات**: البحث في winget وتثبيت الحزم
-- تبويب **مايكروسوفت** (متجر ومكوّنات النظام) وتبويب **مفقودة**
-- عمود بدء التشغيل: البرامج التي تعمل عند تسجيل الدخول
-- تصدير القائمة إلى CSV متوافق مع Excel
-- بحث وتصفية حسب الناشر وأعمدة قابلة للفرز ومظهر فاتح/داكن
-- الواجهة بـ **الإنجليزية والفرنسية والعربية**
-- تحديث التطبيق نفسه من شريط العنوان: تنزيل باستخدام aria2c ثم التحقق من SHA-256
-  ثم تشغيل المثبّت
-- يأتي winget مضغوطًا ويُفك عند أول استخدام لتوفير مساحة القرص
-
-### المتطلبات
-
-- ويندوز 10 إصدار 1809 (بناء 17763) أو أحدث.
-- .NET Framework 4.8 (مثبّت مسبقًا على ويندوز 10/11 المحدّث).
-- الإنترنت مطلوب فقط للتحديثات والتثبيت والتحقق من الكتالوج.
-
-### التثبيت
-
-1. نزّل المثبّت من مجلد [releases](releases):
-   - **Lite** (حوالي 2.4 ميجابايت): ينزّل winget عند أول حاجة.
-   - **Full** (حوالي 59 ميجابايت): يحتوي winget مضغوطًا ويعمل دون إنترنت.
-2. شغّله واتبع المعالج. يثبّت في `C:\Program Files\Apps Manager` ويطلب صلاحيات
-   المدير مرة واحدة.
-3. افتح **Apps Manager** من قائمة ابدأ أو من اختصار سطح المكتب.
-
-### الاستخدام
-
-- تبويبات اليسار تنقلك بين كل البرامج والتحديثات ومايكروسوفت والمفقودة ومثبّت
-  التطبيقات.
-- انقر صفًا لعرض التفاصيل، أو انقر بالزر الأيمن لقائمة الإجراءات.
-- **الأحجام** يقيس المجلد الحقيقي لكل برنامج، وقد يستغرق دقيقة، ويمكن إلغاؤه.
-- **تحقق من التحديث** في شريط العنوان يحدّث Apps Manager نفسه.
-
-### البناء من المصدر
-
-```bat
-src\build.cmd          :: نسخة 64 بت -> src\bin\AppsManager.exe
-src\build.cmd x86      :: نسخة 32 بت -> src\bin\x86\AppsManager.exe
-src\build-setup.cmd    :: المثبّتات -> src\dist\
-push.cmd               :: الحفظ والرفع إلى GitHub
-```
+<sub>Apps Manager 1.1 — Windows 10/11 — no telemetry, no background service.</sub>
 
 </div>
