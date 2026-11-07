@@ -1,0 +1,9 @@
+# build output
+bin/
+dist/
+obj/
+*.pdb
+*.log
+
+# winget is unpacked here on first use (tools/winget.zip is committed)
+tools/winget/

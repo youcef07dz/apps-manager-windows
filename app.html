@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="utf-8">
+<title>Apps Manager</title>
+<style>
+/* ---- base: CSS 2.1, IE8 safe ---- */
+html, body { height: 100%; }
+body {
+    margin: 0; padding: 0;
+    font: 13px/1.4 "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #1c2733; background: #f3f5f8;
+    overflow: hidden;
+}
+#app { position: absolute; top: 0; left: 0; right: 0; bottom: 0; min-width: 900px; }
+
+/* ---- title bar ---- */
+#hdr {
+    position: absolute; top: 0; left: 0; right: 0; height: 42px;
+    background: #16283a; border-bottom: 1px solid #0e1a26;
+}
+#hdr .in { height: 42px; line-height: 42px; padding: 0 134px 0 14px; white-space: nowrap; overflow: hidden; }
+#hdr .mark {
+    display: inline-block; width: 22px; height: 22px; line-height: 22px;
+    margin-right: 9px; background: #2f81f7; color: #ffffff; text-align: center;
+    font: bold 12px/22px "Segoe UI", Tahoma, sans-serif; vertical-align: middle;
+}
+#hdr h1 { display: inline; margin: 0; font: bold 15px "Segoe UI", Tahoma, sans-serif; color: #ffffff; vertical-align: middle; }
+#hdr .sub { margin-left: 10px; font-size: 11px; color: #8fa5b8; vertical-align: middle; }
+
+/* custom window buttons (the form has no native title bar) */
+#winctl { position: absolute; top: 0; right: 0; height: 42px; }
+#winctl a {
+    display: inline-block; width: 40px; height: 42px; line-height: 42px;
+    text-align: center; color: #9fb0c0; text-decoration: none;
+    font-family: "Segoe UI", Tahoma, sans-serif; font-size: 15px; cursor: default;
+}
+#winctl a:hover { background: #23405a; color: #ffffff; }
+#winctl a#winClose:hover { background: #c42b1c; color: #ffffff; }
+#winMin { font-size: 17px; }
+
+/* self-update pill in the title bar */
+#hdrRight { position: absolute; right: 134px; top: 0; height: 42px; line-height: 42px; }
+#appUpd {
+    display: inline-block; height: 22px; line-height: 22px; padding: 0 10px;
+    border: 1px solid #3d5f80; background: #1b3247; color: #a8c8e8;
+    font: 11px "Segoe UI", Tahoma, sans-serif; text-decoration: none; vertical-align: middle;
+}
+#appUpd:hover { background: #24405a; border-color: #5480a8; color: #ffffff; }
+#appUpd.hot { background: #1c6b3a; border-color: #2f9a55; color: #d8ffe8; }
+#appUpd.hot:hover { background: #237f46; border-color: #38b466; }
+#appUpd.busy { color: #8fa5b8; }
+
+/* ---- toolbar ---- */
+#bar {
+    position: absolute; top: 42px; left: 0; right: 0; height: 84px;
+    background: #ffffff; border-bottom: 1px solid #dbe3ec;
+}
+#bar .row1 { height: 46px; }
+#bar .row2 { height: 37px; border-top: 1px solid #edf1f6; }
+#bar .left { padding: 0 14px; }
+#bar .row2 .in { padding: 0 14px; line-height: 37px; }
+#bar .row2 label { color: #5b6b7d; font-size: 12px; margin-right: 6px; }
+#bar .row2 .tabs { display: inline-block; margin-left: 16px; vertical-align: middle; }
+
+.sep {
+    display: inline-block; width: 1px; height: 22px; margin: 12px 8px 0 4px;
+    background: #e1e7ef; vertical-align: top;
+}
+
+.tab {
+    display: inline-block; height: 26px; line-height: 26px; padding: 0 14px;
+    border: 1px solid #d7dee7; background: #f7f9fc; color: #5b6b7d;
+    font: 12px "Segoe UI", Tahoma, sans-serif; text-decoration: none;
+}
+.tab + .tab { margin-left: -1px; }
+.tab.sel { background: #ffffff; color: #1f6fb2; font-weight: bold; border-bottom-color: #1f6fb2; }
+
+.btn {
+    display: inline-block; height: 30px; line-height: 28px; margin: 8px 4px 0 0;
+    padding: 0 12px 0 28px; border: 1px solid #d7dee7; background-color: #ffffff;
+    color: #26394d; background-repeat: no-repeat; background-position: 9px center;
+    font: 12px "Segoe UI", Tahoma, sans-serif; cursor: pointer; vertical-align: top;
+}
+.btn:hover { background-color: #f2f6fa; border-color: #a9bdd2; }
+.btn:active { background-color: #e8eff7; }
+
+/* action colours: tinted buttons so each action is easy to tell apart */
+.btn.b-uninstall { background-color: #fdecea; border-color: #f0b6b0; color: #a1261c; }
+.btn.b-uninstall:hover { background-color: #fbdad6; border-color: #e3938b; }
+.btn.b-update { background-color: #e9f7ef; border-color: #a9d9bb; color: #17603a; }
+.btn.b-update:hover { background-color: #d8f0e1; border-color: #7fc79c; }
+.btn.b-updates { background-color: #e8f2fd; border-color: #b3d0f0; color: #1c5b96; }
+.btn.b-updates:hover { background-color: #d6e8fb; border-color: #8bb9e6; }
+.btn.b-install { background-color: #f0ecfd; border-color: #cfc2f5; color: #4b34a8; }
+.btn.b-install:hover { background-color: #e4dcfb; border-color: #b3a1ee; }
+.btn.b-folder { background-color: #fff6e0; border-color: #f0d79a; color: #8a5a00; }
+.btn.b-folder:hover { background-color: #fdedc6; border-color: #e6c16e; }
+.btn.b-export { background-color: #e6f6f8; border-color: #a8dbe3; color: #14606b; }
+.btn.b-export:hover { background-color: #d3eef2; border-color: #7fc9d5; }
+
+.btn.primary { background-color: #1f6fb2; border-color: #1a5d95; color: #ffffff; }
+.btn.primary:hover { background-color: #2b7ec2; border-color: #2b7ec2; }
+.btn.off { color: #9aa7b5; background-color: #f2f4f7; border-color: #e2e8ef; cursor: default; }
+.btn.off:hover { background-color: #f2f4f7; border-color: #e2e8ef; }
+.btn.plain { padding-left: 12px; }
+
+/* toolbar icons (16x16 PNG data URIs, IE8-safe) */
+.b-refresh { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADuSURBVDhPvZKtDsJAEIQrK5HISiSPgKxEIit5DBwSiUQikeDgDSqRSCQSQdLyzXVCQ5s0bUKYZLK3s7Pb3k/0V5RlOfKyH2hI4AxOna9gFopdKIpiCW+YPyB/EC5V1jEE49am0ATPMHf+CoUK7SEYFqoQn00DWgpPqgus9YdhawEkMeLdxaXlL1DSeWQwsVQDcQrVfLU0DPTOPeBgaRhoTD0gtzQM9OoMdHhCe499wIC9uolXwthyALk+oCueWGqD4sjNGqI3sGGZEdcwPCxi9xbxJJiOMjfhIfXddwGj7nxF0w7q13VLscu/QhS9ARlmPm1f4bBCAAAAAElFTkSuQmCC); }
+.b-uninstall { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADRSURBVDhPYxi8YLOyuAMQNyBhB6gUcQCkaYuyxH8YBvGhUtgByAaoTWC8SVl8AZA+AMNQPm4XgQSRbSSEQeqhWiEAZCLUZGIx9jDZqCJmgUUxMsYfmJuVxCOwORmGNytJFkCVYgcgF4AUPl6zAkUjjL9JWTIAqhQ72CIvKgFSCALIBsD5qlIGUKW4AdCf33EZsF5eXgCqDDfYoix+HYcB76FK8ANgQG7/9vgRigEg/mYlifNQJfgB0AXTkTXDsZLEeqgS/AAU10jxDseYMcDAAABOgtn0CzzvBwAAAABJRU5ErkJggg==); }
+.b-update { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACaSURBVDhPYxj8QD7LVALKJB1IZVkZyGRbfpfOtnaAChEP5PPtBWSyre7LZlv9l8myfC+fbq4AlSIOyGZZ7QdpRmDL8/Lx9hxQafxAJsuqH1UzFGdZLYcqwQ1ATgfa1gDCQKcvANIHoDRYjCSvQDSBbLdsgAqRBkayAaCUB9FseQBqAJC2bCA6RUI0gzSiYyJdguQCFIzpAgYGAAJ/XPseePCTAAAAAElFTkSuQmCC); }
+.b-folder { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAB2SURBVDhPYxgFELC/ntthbz1nAzLeU88ZAJUmDEAa9jVw/UfHe+q5EqBK8INjHfxTjrTzPMCGj3bwHgHiA9jwiS7+ArAB5/sFF5zuFfhPKgbpAxtwc7Zow83ZYv9Jx6INowZQy4Drs8UdIIaQhkH6wAaQDxgYAOWZWF7REjHoAAAAAElFTkSuQmCC); }
+.b-updates { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAD7SURBVDhPY6AJkM9fbyCfv9lBPnejBVSIOADSIJe/8bp8/qb/MCyXt+m9fP7GBKgS3ACkGUnTfSDej2rYxgKoUkwgH7+fA6QJonnjehAfKsUgn7chAyyev/E70GsKUGFUALMdbAiSZhiQy9+0HewKoGFQIVSAsGXTcqgQCgDKV0DkN0+HCqECoAs8oAYchwqhAJBGsAtwhYN81hYJiB/BARYAFQYDkL/hcviiFeZMEAbbCOQD6XZINIJd9wZomABUOXYA0gAzBBkDXfAFTOdtOk/QEPmcTRpAvzaAAhREQ2II6A14NBNhCDYw+AwBJy4siY4oAIp2iGYGBgDSzLy+wZrDDAAAAABJRU5ErkJggg==); }
+.b-export { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACCSURBVDhPYxicwDM697xXdN5/XBgkD1WKHYAUQZlYASF58g0ITim9DZLEhUHyIHUgNlgDOgBJ4AMwjbQ3oKJlMorTQXwQgGmE0RgAJIEPEG0ATV0Awp5Rue+hWlABzABkF8BsBwEQH6oUO4AZgAsQNMAntuAzzGZsGCQPVUotwMAAABw7OJEg+rgQAAAAAElFTkSuQmCC); }
+
+#q {
+    width: 170px; height: 26px; padding: 0 9px; vertical-align: middle;
+    border: 1px solid #d7dee7; background: #ffffff; color: #1c2733;
+    font: 12px "Segoe UI", Tahoma, sans-serif;
+}
+
+#bar .row2 .pubpick { margin-right: 12px; }
+#pub {
+    width: 130px; height: 26px; padding: 0 3px; vertical-align: middle;
+    border: 1px solid #d7dee7; background: #ffffff; color: #1c2733;
+    font: 12px "Segoe UI", Tahoma, sans-serif;
+}
+
+/* ---- language picker + theme ---- */
+#bar .row2 .langpick { float: right; line-height: 37px; }
+#bar .row2 .langpick label { margin-right: 6px; }
+#btnTheme { margin: 4px 12px 0 0; height: 28px; line-height: 26px; padding: 0 12px; vertical-align: top; }
+#lang {
+    height: 26px; padding: 0 3px; vertical-align: middle;
+    border: 1px solid #d7dee7; background: #ffffff; color: #1c2733;
+    font: 12px "Segoe UI", Tahoma, sans-serif;
+}
+
+/* ---- grid ---- */
+#main { position: absolute; top: 126px; bottom: 26px; left: 0; right: 301px; background: #ffffff; }
+#headWrap { position: absolute; top: 0; left: 0; right: 0; background: #f7f9fc; }
+#bodyWrap { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; overflow-y: scroll; overflow-x: hidden; }
+
+.grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.grid th {
+    height: 34px; padding: 0 12px; text-align: left;
+    font: 11px "Segoe UI", Tahoma, sans-serif; letter-spacing: 0.4px; text-transform: uppercase;
+    color: #6b7c8f; background: #f7f9fc; border-bottom: 1px solid #dbe3ec; white-space: nowrap;
+}
+.grid td {
+    padding: 0 12px; height: 34px; line-height: 34px; border-bottom: 1px solid #eef2f6;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.grid tr.alt td { background: #fafbfd; }
+.grid tr.sel td { background: #2a6b9f; color: #ffffff; border-bottom-color: #245d8a; }
+.grid tr.sel td.nm { color: #ffffff; }
+.grid tr.sel td .muted { color: #d3e6f7; }
+.grid tr.sel td .badge { background: #ffffff; color: #8a4a00; border-color: #ffffff; }
+.grid td.nm { color: #1c2733; font-weight: bold; }
+.grid td.nm img.ico { width: 18px; height: 18px; border: 0; vertical-align: middle; margin: -2px 8px 0 0; }
+.ph {
+    display: inline-block; width: 18px; height: 18px; line-height: 18px;
+    margin: -2px 8px 0 0; text-align: center; vertical-align: middle;
+    background: #e8eef6; color: #5b6b7d; font-size: 10px; font-weight: bold;
+}
+.grid tr.sel td .ph { background: #ffffff; color: #2a6b9f; }
+.grid td.empty { text-align: center; color: #8a97a6; padding: 26px 12px; }
+.grid td a.rowinst { color: #1f6fb2; text-decoration: underline; cursor: pointer; }
+.grid tr.sel td a.rowinst { color: #ffffff; }
+.grid th.sortable { cursor: pointer; }
+.grid th.sorted { color: #1f6fb2; }
+.arr { display: inline-block; width: 0; height: 0; margin-left: 6px; font-size: 0; line-height: 0;
+       border-left: 4px solid transparent; border-right: 4px solid transparent; }
+.arr.up { border-bottom: 5px solid #1f6fb2; }
+.arr.dn { border-top: 5px solid #1f6fb2; }
+
+.badge {
+    display: inline-block; padding: 0 7px; line-height: 18px; background: #fff4e5;
+    color: #9a5b00; border: 1px solid #f0c68a;
+    font: 11px "Segoe UI", Tahoma, sans-serif; font-weight: bold; vertical-align: middle;
+}
+.muted { color: #8a97a6; }
+
+/* ---- details ---- */
+#details {
+    position: absolute; top: 126px; right: 0; bottom: 26px; width: 300px;
+    background: #ffffff; border-left: 1px solid #dbe3ec; overflow: hidden;
+}
+#detailsHead {
+    height: 34px; line-height: 34px; padding: 0 16px;
+    font: 11px "Segoe UI", Tahoma, sans-serif; font-weight: bold; letter-spacing: 0.5px;
+    text-transform: uppercase; color: #6b7c8f; background: #f7f9fc;
+    border-bottom: 1px solid #dbe3ec;
+}
+#detailsBody { position: absolute; top: 34px; left: 0; right: 0; bottom: 0; overflow-y: auto; overflow-x: hidden; }
+#details .pad { padding: 14px 16px 18px 16px; }
+.dt { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.dt td { padding: 7px 8px 7px 0; vertical-align: top; font-size: 12px; word-wrap: break-word; border-bottom: 1px solid #f0f3f7; }
+.dt td.k { width: 96px; color: #7a8899; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; padding-top: 9px; }
+.mono { font-family: Consolas, "Courier New", monospace; font-size: 11px; color: #4a5b6e; word-wrap: break-word; }
+
+/* ---- status bar ---- */
+#status {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 26px; line-height: 26px;
+    padding: 0 14px; background: #f7f9fc; border-top: 1px solid #dbe3ec;
+    color: #6b7c8f; font-size: 11px;
+}
+#count { float: right; color: #8a97a6; }
+
+/* update progress: fills the row's Update cell behind the version badge */
+.upd { position: relative; margin: 0 -12px; padding: 0 12px; line-height: 34px; }
+.upd .pfill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+    background: #cfe3f5; font-size: 0; line-height: 0;
+}
+.upd .badge { position: relative; z-index: 1; }
+.upd .pct { position: relative; z-index: 1; }
+.grid tr.sel .upd .pfill { background: #6aa6d8; }
+
+/* update cell when the check found nothing to install */
+.uptodate {
+    display: inline-block; padding: 0 8px; line-height: 18px;
+    background: #e8f7ee; color: #14663a; border: 1px solid #b7e4c8;
+    font-size: 11px; font-weight: bold; vertical-align: middle;
+}
+.grid tr.sel .uptodate { background: #ffffff; color: #1f7a45; border-color: #ffffff; }
+
+/* warning pills in the name cell */
+.pill {
+    display: inline-block; height: 16px; line-height: 14px; padding: 0 6px;
+    margin-right: 6px; border: 1px solid; vertical-align: middle;
+    font: bold 10px "Segoe UI", Tahoma, sans-serif;
+}
+.pill.miss { background: #fdecea; color: #a1261c; border-color: #f0b6b0; }
+.pill.dup { background: #fff4e5; color: #8a4a00; border-color: #f0c68a; }
+.pill.ign { background: #eef1f5; color: #5b6b7d; border-color: #ccd6e0; }
+.grid tr.sel td .pill.miss { background: #ffffff; color: #a1261c; border-color: #ffffff; }
+.grid tr.sel td .pill.dup { background: #ffffff; color: #8a4a00; border-color: #ffffff; }
+.grid tr.sel td .pill.ign { background: #ffffff; color: #5b6b7d; border-color: #ffffff; }
+.cachetag { margin-left: 10px; color: #8a5a00; }
+body.dark .pill.miss { background: #3a1f1d; color: #ffb3aa; border-color: #8c3d36; }
+body.dark .pill.dup { background: #33280f; color: #ffd27a; border-color: #8a6b2a; }
+body.dark .pill.ign { background: #242c36; color: #a9b7c6; border-color: #3d4a58; }
+body.dark .grid tr.sel td .pill.miss,
+body.dark .grid tr.sel td .pill.dup,
+body.dark .grid tr.sel td .pill.ign { background: #ffffff; border-color: #ffffff; }
+body.dark .cachetag { color: #ffd27a; }
+
+#status a { color: #1f6fb2; padding-left: 17px; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACaSURBVDhPYxj8QD7LVALKJB1IZVkZyGRbfpfOtnaAChEP5PPtBWSyre7LZlv9l8myfC+fbq4AlSIOyGZZ7QdpRmDL8/Lx9hxQafxAJsuqH1UzFGdZLYcqwQ1ATgfa1gDCQKcvANIHoDRYjCSvQDSBbLdsgAqRBkayAaCUB9FseQBqAJC2bCA6RUI0gzSiYyJdguQCFIzpAgYGAAJ/XPseePCTAAAAAElFTkSuQmCC) no-repeat 0 center; }
+.st-err { color: #b42318; }
+.st-warn { color: #a15c00; }
+.st-ok { color: #1d6b3a; }
+
+/* ---- context menu ---- */
+#menu {
+    position: fixed; z-index: 1000; display: none; min-width: 200px;
+    padding: 5px 0; background: #ffffff; border: 1px solid #c9d5e2;
+}
+.mi { padding: 8px 18px 8px 36px; font-size: 12px; color: #26394d; cursor: pointer; white-space: nowrap;
+      background-repeat: no-repeat; background-position: 12px center; }
+#mi-uninstall { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADRSURBVDhPYxi8YLOyuAMQNyBhB6gUcQCkaYuyxH8YBvGhUtgByAaoTWC8SVl8AZA+AMNQPm4XgQSRbSSEQeqhWiEAZCLUZGIx9jDZqCJmgUUxMsYfmJuVxCOwORmGNytJFkCVYgcgF4AUPl6zAkUjjL9JWTIAqhQ72CIvKgFSCALIBsD5qlIGUKW4AdCf33EZsF5eXgCqDDfYoix+HYcB76FK8ANgQG7/9vgRigEg/mYlifNQJfgB0AXTkTXDsZLEeqgS/AAU10jxDseYMcDAAABOgtn0CzzvBwAAAABJRU5ErkJggg==); }
+#mi-update { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACaSURBVDhPYxj8QD7LVALKJB1IZVkZyGRbfpfOtnaAChEP5PPtBWSyre7LZlv9l8myfC+fbq4AlSIOyGZZ7QdpRmDL8/Lx9hxQafxAJsuqH1UzFGdZLYcqwQ1ATgfa1gDCQKcvANIHoDRYjCSvQDSBbLdsgAqRBkayAaCUB9FseQBqAJC2bCA6RUI0gzSiYyJdguQCFIzpAgYGAAJ/XPseePCTAAAAAElFTkSuQmCC); }
+#mi-folder { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAB2SURBVDhPYxgFELC/ntthbz1nAzLeU88ZAJUmDEAa9jVw/UfHe+q5EqBK8INjHfxTjrTzPMCGj3bwHgHiA9jwiS7+ArAB5/sFF5zuFfhPKgbpAxtwc7Zow83ZYv9Jx6INowZQy4Drs8UdIIaQhkH6wAaQDxgYAOWZWF7REjHoAAAAAElFTkSuQmCC); }
+#mi-copy { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACCSURBVDhPYxicwDM697xXdN5/XBgkD1WKHYAUQZlYASF58g0ITim9DZLEhUHyIHUgNlgDOgBJ4AMwjbQ3oKJlMorTQXwQgGmE0RgAJIEPEG0ATV0Awp5Rue+hWlABzABkF8BsBwEQH6oUO4AZgAsQNMAntuAzzGZsGCQPVUotwMAAABw7OJEg+rgQAAAAAElFTkSuQmCC); }
+#mi-run { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACKSURBVDhPYximQD5/vQKUSR6Qz9/YIJe/6bh8ziYNqBBpAGSAfP6m/yAsl7+5XT5+PwdUijiAbADYkLxN9+VzN3pApQkDdAPgBuVvWi6ftUUCqgw3wGUACANd8x4YyAZQpdgBThcQ6xVsBpAUmMgGkBWdIAPAfs3bkAEVIg3I5292ICq0BwFgYAAAIgtvaXO5krAAAAAASUVORK5CYII=); }
+.mi.hov { background-color: #f2f6fa; }
+.mi.off { color: #a4b0bd; cursor: default; }
+.msep { height: 1px; margin: 5px 0; background: #e8edf3; font-size: 0; line-height: 0; }
+
+/* ---- update log ---- */
+#log {
+    position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 1100;
+    display: none; background: #ffffff;
+}
+#log .bar2 {
+    height: 40px; line-height: 40px; padding: 0 16px; font-weight: bold; color: #26394d;
+    background: #f7f9fc; border-bottom: 1px solid #dbe3ec;
+}
+#log .bar2 a { float: right; color: #1f6fb2; font-weight: normal; }
+#log pre {
+    position: absolute; top: 41px; left: 0; right: 0; bottom: 0; margin: 0;
+    padding: 12px 16px; overflow: auto; color: #22303f;
+    font: 11px Consolas, "Courier New", monospace;
+    white-space: pre-wrap; word-wrap: break-word;
+}
+
+/* modern browsers only: IE8 ignores this whole block */
+@media screen and (min-width: 0) {
+    #hdr .mark { border-radius: 5px; }
+    .btn { border-radius: 4px; }
+    .tab:first-child { border-radius: 4px 0 0 4px; }
+    .tab:last-child { border-radius: 0 4px 4px 0; }
+    .badge { border-radius: 10px; }
+    .ph { border-radius: 4px; }
+    .grid tbody tr:hover td { background: #f2f7fc; }
+    .grid tr.sel td { border-left: 3px solid #8fc2ea; padding-left: 9px; }
+    .grid tbody tr.sel:hover td { background: #2a6b9f; color: #ffffff; }
+    .grid th.sortable:hover { background: #eef3f9; }
+    #menu { border-radius: 5px; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+}
+
+/* ---- dark theme ---- */
+body.dark { background: #0f141a; color: #d6dde5; }
+body.dark #hdr { background: #0f151c; border-bottom-color: #080c10; }
+body.dark #hdr .sub { color: #7f93a6; }
+body.dark #bar { background: #151c24; border-bottom-color: #26313d; }
+body.dark #bar .row2 { border-top-color: #222b35; }
+body.dark #bar .row2 label { color: #9aa9b8; }
+body.dark .sep { background: #2a3440; }
+body.dark .tab { border-color: #2c3947; background: #171e26; color: #9fb0c0; }
+body.dark .tab.sel { background: #1f2a36; color: #8cc2ff; border-bottom-color: #2f81f7; }
+body.dark .btn { border-color: #2c3947; background-color: #1a222c; color: #d6dde5; }
+body.dark .btn:hover { background-color: #222c38; border-color: #3d4d5e; }
+body.dark .btn:active { background-color: #2a3644; }
+body.dark .btn.b-uninstall { background-color: #4a2420; border-color: #8c3d36; color: #ffb3aa; }
+body.dark .btn.b-uninstall:hover { background-color: #5c2c27; border-color: #a94b42; }
+body.dark .btn.b-update { background-color: #17452a; border-color: #388a5b; color: #8cecb4; }
+body.dark .btn.b-update:hover { background-color: #1d5534; border-color: #46a76f; }
+body.dark .btn.b-updates { background-color: #1b3550; border-color: #3a6a99; color: #9ccbff; }
+body.dark .btn.b-updates:hover { background-color: #224262; border-color: #4c82b5; }
+body.dark .btn.b-install { background-color: #2f2650; border-color: #5a479e; color: #cdbfff; }
+body.dark .btn.b-install:hover { background-color: #3a2f63; border-color: #705bb8; }
+body.dark .btn.b-folder { background-color: #453615; border-color: #8a6b2a; color: #ffd27a; }
+body.dark .btn.b-folder:hover { background-color: #56441b; border-color: #a88434; }
+body.dark .btn.b-export { background-color: #123a40; border-color: #2a6f78; color: #7fdbe8; }
+body.dark .btn.b-export:hover { background-color: #174a52; border-color: #388a95; }
+body.dark .btn.primary { background-color: #2f81f7; border-color: #2f81f7; color: #ffffff; }
+body.dark .btn.primary:hover { background-color: #4a94ff; border-color: #4a94ff; }
+body.dark .btn.off { color: #5f6b78; background-color: #171e26; border-color: #26313d; }
+body.dark .btn.off:hover { background-color: #171e26; border-color: #26313d; }
+body.dark #q, body.dark #lang, body.dark #pub { border-color: #2c3947; background: #0f151c; color: #e3e9f0; }
+body.dark #main { background: #131a22; }
+body.dark #headWrap { background: #151c24; }
+body.dark .grid th { color: #7f8d9c; background: #151c24; border-bottom-color: #26313d; }
+body.dark .grid td { border-bottom-color: #1f2831; }
+body.dark .grid tr.alt td { background: #121920; }
+body.dark .grid tr.sel td { background: #1d3f63; color: #ffffff; border-bottom-color: #1d3f63; }
+body.dark .grid tr.sel td.nm { color: #ffffff; }
+body.dark .grid td.nm { color: #e6edf5; }
+body.dark .grid td.empty { color: #6f7d8c; }
+body.dark .ph { background: #222c38; color: #9aa9b8; }
+body.dark .grid tr.sel td .ph { background: #ffffff; color: #1d3f63; }
+body.dark .muted { color: #6f7d8c; }
+body.dark .grid tr.sel td .muted { color: #cfe3f5; }
+body.dark .upd .pfill { background: #24425f; }
+body.dark .grid tr.sel .upd .pfill { background: #3f6f9e; }
+body.dark .uptodate { background: #12351f; color: #7ee2a8; border-color: #1f6b3a; }
+body.dark .grid tr.sel .uptodate { background: #ffffff; color: #14663a; border-color: #ffffff; }
+body.dark .badge { background: #3a2a0e; color: #f5c26b; border-color: #6b4a12; }
+body.dark .grid tr.sel td .badge { background: #ffffff; color: #8a4a00; border-color: #ffffff; }
+body.dark #details { background: #10161d; border-left-color: #26313d; }
+body.dark #detailsHead { background: #151c24; color: #7f8d9c; border-bottom-color: #26313d; }
+body.dark .dt td { border-bottom-color: #1b232c; }
+body.dark .dt td.k { color: #6f7d8c; }
+body.dark .mono { color: #b9c7d5; }
+body.dark #status { background: #0f151c; border-top-color: #26313d; color: #7f8d9c; }
+body.dark #count { color: #6f7d8c; }
+body.dark #status a { color: #8cc2ff; }
+body.dark #menu { background: #1a222c; border-color: #33404e; }
+body.dark .mi { color: #d6dde5; }
+body.dark .mi.hov { background-color: #222c38; }
+body.dark .mi.off { color: #5f6b78; }
+body.dark .msep { background: #26313d; }
+body.dark #log { background: #0f141a; }
+body.dark #log .bar2 { background: #151c24; border-bottom-color: #26313d; color: #d6dde5; }
+body.dark #log .bar2 a { color: #8cc2ff; }
+body.dark #log pre { color: #c9d3de; }
+/* ---- themed scrollbars (IE scrollbar-*-color) ---- */
+#bodyWrap, #detailsBody, #log pre {
+    scrollbar-face-color: #cfd8e3; scrollbar-track-color: #f2f5f9;
+    scrollbar-arrow-color: #5b6b7d; scrollbar-shadow-color: #b9c5d3;
+    scrollbar-highlight-color: #ffffff; scrollbar-3dlight-color: #ffffff;
+    scrollbar-darkshadow-color: #aab7c6; scrollbar-base-color: #cfd8e3;
+}
+body.dark #bodyWrap, body.dark #detailsBody, body.dark #log pre {
+    scrollbar-face-color: #2c3947; scrollbar-track-color: #151c24;
+    scrollbar-arrow-color: #c9d3de; scrollbar-shadow-color: #2c3947;
+    scrollbar-highlight-color: #2c3947; scrollbar-3dlight-color: #151c24;
+    scrollbar-darkshadow-color: #151c24; scrollbar-base-color: #2c3947;
+}
+body.dark .grid tbody tr:hover td { background: #1a2330; }
+body.dark .grid tbody tr.sel:hover td { background: #1d3f63; color: #ffffff; }
+body.dark .grid th.sortable:hover { background: #1a2330; }
+
+</style>
+</head>
+<body class="dark">
+<div id="app">
+    <div id="hdr" unselectable="on">
+        <div class="in">
+            <span class="mark">A</span>
+            <h1 data-t="app.title">Apps Manager</h1>
+            <span class="sub" data-t="app.sub">Installed programs &mdash; uninstall, update, inspect</span>
+        </div>
+        <div id="hdrRight">
+            <a href="#" id="appUpd" data-t="btn.appUpdate" data-t-title="btn.appUpdateTitle"
+               title="Check for a new Apps Manager version">Check update</a>
+        </div>
+        <div id="winctl">
+            <a href="#" id="winMin" title="Minimize">&#8211;</a>
+            <a href="#" id="winMax" title="Maximize">&#9633;</a>
+            <a href="#" id="winClose" title="Close">&#215;</a>
+        </div>
+    </div>
+
+    <div id="bar">
+        <div class="row1">
+            <div class="left">
+                <button type="button" class="btn primary b-refresh" id="btnRefresh" data-t="btn.refresh">Refresh</button>
+                <span class="sep"></span>
+                <button type="button" class="btn b-uninstall" id="btnUninstall" data-t="btn.uninstall">Uninstall</button>
+                <button type="button" class="btn b-update" id="btnUpdate" data-t="btn.update">Update</button>
+                <button type="button" class="btn b-update" id="btnUpdateAll" data-t="btn.updateAll">Update all</button>
+                <button type="button" class="btn b-install" id="btnInstall" data-t="btn.install">Install</button>
+                <span class="sep"></span>
+                <button type="button" class="btn b-folder" id="btnFolder" data-t="btn.folder">Open folder</button>
+                <button type="button" class="btn b-updates" id="btnUpdates" data-t="btn.updates">Check updates</button>
+                <button type="button" class="btn b-export" id="btnExport" data-t="btn.export">Export</button>
+                <button type="button" class="btn b-folder" id="btnSizes" data-t="btn.sizes" data-t-title="btn.sizesTitle" title="Calculate the real folder size for every program">Sizes</button>
+            </div>
+        </div>
+        <div class="row2">
+            <div class="in">
+                <label for="q" data-t="search.label">Search</label>
+                <input type="text" id="q" autocomplete="off">
+                <span class="tabs">
+                    <a href="#" id="tabAll" class="tab sel"><span data-t="tab.all">All programs</span></a>
+                    <a href="#" id="tabUpdates" class="tab"><span data-t="tab.updates">Updates</span><span id="tabCount"></span></a>
+                    <a href="#" id="tabMs" class="tab"><span data-t="tab.ms">Microsoft</span></a>
+                    <a href="#" id="tabMissing" class="tab"><span data-t="tab.missing">Missing</span><span id="missCount"></span></a>
+                    <a href="#" id="tabInstall" class="tab"><span data-t="tab.install">App installer</span></a>
+                </span>
+                <span class="langpick">
+                    <span class="pubpick" id="pubpick"><select id="pub"><option value="">All publishers</option></select></span>
+                    <button type="button" class="btn plain" id="btnTheme">Dark</button>
+                    <label for="lang" data-t="lang.label">Language</label><select id="lang">
+                        <option value="en">English</option>
+                        <option value="fr">Fran&ccedil;ais</option>
+                        <option value="ar">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</option>
+                    </select>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        <div id="headWrap"></div>
+        <div id="bodyWrap"></div>
+    </div>
+
+    <div id="details">
+        <div id="detailsHead" data-t="details.title">Details</div>
+        <div id="detailsBody">
+            <div class="pad muted" data-t="details.hint">Select a program to see its install path, uninstall command and disk size.</div>
+        </div>
+    </div>
+
+    <div id="menu"></div>
+
+    <div id="log">
+        <div class="bar2"><span data-t="log.title">Update log</span> <a href="#" id="lnkLogClose" data-t="log.close">Close</a></div>
+        <pre id="logText"></pre>
+    </div>
+
+    <div id="status">
+        <span id="statusmsg">Starting&hellip;</span><span id="cacheTag" class="cachetag" data-t="status.cached" style="display:none">Cached list — rescanning…</span><span id="wingetLink" style="display:none"> &middot; <a href="#" id="lnkWinget" data-t="link.winget">Get winget</a></span><span id="logLink" style="display:none"> &middot; <a href="#" id="lnkLog" data-t="link.log">Show log</a></span>
+        <span id="count"></span>
+    </div>
+</div>
+
+<script type="text/javascript">
+var COLS = '<col style="width:33%"><col style="width:9%"><col style="width:13%">'
+         + '<col style="width:22%"><col style="width:10%"><col style="width:13%">';
+var COLS_INSTALL = '<col style="width:38%"><col style="width:27%">'
+         + '<col style="width:11%"><col style="width:12%"><col style="width:12%">';
+var BASE = { btnRefresh: 'btn primary b-refresh', btnUninstall: 'btn b-uninstall',
+             btnUpdate: 'btn b-update', btnUpdateAll: 'btn b-update',
+             btnInstall: 'btn b-install',
+             btnFolder: 'btn b-folder', btnUpdates: 'btn b-updates',
+             btnExport: 'btn b-export', btnSizes: 'btn b-folder' };
+
+var apps = [];
+var view = [];
+var selectedKey = '';
+var ignored = {};         // app key -> 1: "Update all" skips it
+var updatesChecked = false;
+var tabMode = 'all';      // 'all' | 'updates' | 'ms' | 'install'
+var isDark = false;
+var sortKey = 'name';
+var sortDir = 1;          // 1 = ascending, -1 = descending
+
+/* app installer tab: winget search results */
+var searchResults = [];
+var installSelected = '';
+var lastQuery = '';
+var searching = false;
+var measuringSizes = false;
+var installingName = '';
+var installingId = '';
+var installPct = 0;
+
+function $(id) { return document.getElementById(id); }
+
+function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function on(el, name, fn) {
+    if (el.addEventListener) el.addEventListener(name, fn, false);
+    else el.attachEvent('on' + name, fn);
+}
+
+function setStatus(text, kind) {
+    $('statusmsg').innerHTML = esc(text);
+    $('statusmsg').className = kind ? 'st-' + kind : '';
+}
+
+function setEnabled(el, enabled) {
+    el.disabled = !enabled;
+    el.className = (BASE[el.id] || 'btn') + (enabled ? '' : ' off');
+}
+
+/* ---------- update progress ---------- */
+
+var updatingKeys = {};
+var cellActive = {};     // key -> the host has started this package
+var cellProgress = {};   // key -> real percent reported by the host
+var cellReal = {};       // key -> host reported at least one real percent
+var cellTimer = null;
+var cellPos = 0;
+
+/* winget's own download progress is measured by the host and pushed in through
+   onUpdateProgress. Until a package starts (host sends -1) nothing fills; when no
+   real percent arrives (unknown installer size) the cell falls back to a slow
+   time-based fill. */
+function startCellProgress(keys) {
+    for (var i = 0; i < keys.length; i++) {
+        updatingKeys[keys[i]] = true;
+        cellActive[keys[i]] = false;
+        cellProgress[keys[i]] = 0;
+    }
+    render();
+    if (cellTimer) return;
+    cellPos = 0;
+    cellTimer = setInterval(function () {
+        cellPos += 2;
+        if (cellPos > 100) cellPos = 0;
+        for (var key in updatingKeys) {
+            if (!cellActive[key]) continue;
+            paintCell(key, cellReal[key] ? cellProgress[key] : cellPos);
+        }
+    }, 150);
+}
+
+function paintCell(key, percent) {
+    var nodes = $('bodyWrap').getElementsByTagName('div');
+    for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].className === 'pfill' && nodes[i].appKey === key) {
+            nodes[i].style.width = (percent || 0) + '%';
+            return;
+        }
+    }
+}
+
+/* -1 means "this package just started, no percentage yet". */
+function onUpdateProgress(key, percent) {
+    if (!updatingKeys[key]) return;
+    cellActive[key] = true;
+    if (percent >= 0) {
+        cellReal[key] = true;
+        cellProgress[key] = percent;
+        paintCell(key, percent);
+    }
+}
+
+function stopCellProgress() {
+    if (cellTimer) { clearInterval(cellTimer); cellTimer = null; }
+    updatingKeys = {};
+    cellActive = {};
+    cellProgress = {};
+    cellReal = {};
+}
+
+/* ---------- list ---------- */
+
+function refresh() {
+    setStatus(T('status.scanning'));
+    var raw;
+    try {
+        raw = window.external.GetApps();
+    } catch (e) {
+        setStatus(T('status.readFail', e.message), 'err');
+        return;
+    }
+    try {
+        apps = JSON.parse(raw);
+    } catch (e2) {
+        setStatus(T('status.badData'), 'err');
+        return;
+    }
+    if (selectedKey && !findApp(selectedKey)) {
+        selectedKey = '';
+        showDetails(null);
+    }
+    fillPublishers();
+    render();
+    setStatus(T('status.refreshed'));
+}
+
+function findApp(key) {
+    for (var i = 0; i < apps.length; i++) {
+        if (apps[i].key === key) return apps[i];
+    }
+    return null;
+}
+
+function setTab(mode) {
+    tabMode = mode;
+    $('tabAll').className = mode === 'all' ? 'tab sel' : 'tab';
+    $('tabUpdates').className = mode === 'updates' ? 'tab sel' : 'tab';
+    $('tabMs').className = mode === 'ms' ? 'tab sel' : 'tab';
+    $('tabMissing').className = mode === 'missing' ? 'tab sel' : 'tab';
+    $('tabInstall').className = mode === 'install' ? 'tab sel' : 'tab';
+    if ($('pubpick')) $('pubpick').style.display = mode === 'install' ? 'none' : 'inline';
+    buildHeader();
+    render();
+    refreshDetails();
+    if (mode === 'install' && !searchResults.length && !searching) {
+        setStatus(lastQuery ? T('status.noPackages') : T('status.searchEmpty'));
+    }
+}
+
+function isMicrosoft(app) {
+    var hay = (app.publisher || '') + ' ' + (app.name || '');
+    return hay.toLowerCase().indexOf('microsoft') >= 0;
+}
+
+function render() {
+    if (tabMode === 'install') { renderSearch(); return; }
+    var q = $('q').value.toLowerCase();
+    var pub = $('pub') ? $('pub').value : '';
+    view = [];
+    for (var i = 0; i < apps.length; i++) {
+        var a = apps[i];
+        if (q) {
+            var hay = (a.name + ' ' + a.publisher + ' ' + a.version).toLowerCase();
+            if (hay.indexOf(q) < 0) continue;
+        }
+        if (pub && a.publisher !== pub) continue;
+        if (tabMode === 'updates' && !a.latest) continue;
+        if (tabMode === 'ms' && !isMicrosoft(a)) continue;
+        if (tabMode === 'missing' && !a.missing) continue;
+        view.push(a);
+    }
+    sortView();
+
+    var dupNames = {};
+    for (var d = 0; d < apps.length; d++) {
+        var dk = (apps[d].name || '').toLowerCase();
+        if (!dupNames[dk]) dupNames[dk] = [];
+        var dv = apps[d].version || '';
+        var seenVersion = false;
+        for (var dx = 0; dx < dupNames[dk].length; dx++) if (dupNames[dk][dx] === dv) seenVersion = true;
+        if (!seenVersion) dupNames[dk].push(dv);
+    }
+
+    var wrap = $('bodyWrap');
+    var scroll = wrap.scrollTop;
+    var html = '<table class="grid"><colgroup>' + COLS + '</colgroup><tbody>';
+    var fillKeys = [];
+
+    for (var j = 0; j < view.length; j++) {
+        var app = view[j];
+        var cls = 'row' + (j % 2 ? ' alt' : '') + (app.key === selectedKey ? ' sel' : '');
+        var icon = app.icon
+            ? '<img class="ico" src="' + app.icon + '" alt="">'
+            : '<span class="ph">' + esc(app.name.charAt(0).toUpperCase()) + '</span>';
+        var dups = dupNames[(app.name || '').toLowerCase()];
+        var marks = '';
+        if (app.missing) marks += '<span class="pill miss">' + esc(T('badge.missing')) + '</span>';
+        if (dups && dups.length > 1) marks += '<span class="pill dup">' + esc(T('badge.versions', dups.length)) + '</span>';
+        if (isIgnored(app)) marks += '<span class="pill ign">' + esc(T('badge.ignored')) + '</span>';
+        html += '<tr class="' + cls + '">';
+        html += '<td class="nm" title="' + esc(app.name) + '">' + icon + marks + esc(app.name) + '</td>';
+        html += '<td title="' + esc(app.version) + '">' + (app.version ? esc(app.version) : '<span class="muted">&mdash;</span>') + '</td>';
+        var upd;
+        if (app.latest) upd = '<span class="badge">' + esc(app.latest) + '</span>';
+        else if (app.upToDate) upd = '<div class="uptodate">' + esc(T('upd.uptodate')) + '</div>';
+        else upd = '<span class="muted">&mdash;</span>';
+        if (app.latest && updatingKeys[app.key]) {
+            upd = '<div class="upd"><div class="pfill"></div>' + upd + '</div>';
+            fillKeys.push(app.key);
+        }
+        html += '<td>' + upd + '</td>';
+        html += '<td title="' + esc(app.publisher) + '">' + (app.publisher ? esc(app.publisher) : '<span class="muted">&mdash;</span>') + '</td>';
+        html += '<td>' + (app.installed ? esc(app.installed) : '<span class="muted">&mdash;</span>') + '</td>';
+        html += '<td>' + (app.size ? esc(app.size) : '<span class="muted">&mdash;</span>') + '</td>';
+        html += '</tr>';
+    }
+
+    if (!view.length) {
+        var empty = apps.length ? T('status.noMatch') : T('status.noPrograms');
+        if (apps.length && tabMode === 'updates') empty = T('status.noUpdates');
+        if (apps.length && tabMode === 'ms') empty = T('status.noMs');
+        if (apps.length && tabMode === 'missing') empty = T('status.noMissing');
+        html += '<tr><td colspan="6" class="empty">' + esc(empty) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    wrap.innerHTML = html;
+    wrap.scrollTop = scroll;
+
+    // link each fill to its app key and restore the width it already reached
+    var nodes = wrap.getElementsByTagName('div');
+    for (var n = 0, f = 0; n < nodes.length; n++) {
+        if (nodes[n].className !== 'pfill') continue;
+        var fillKey = fillKeys[f++];
+        nodes[n].appKey = fillKey;
+        if (cellProgress[fillKey]) nodes[n].style.width = cellProgress[fillKey] + '%';
+    }
+
+    var totalKb = 0;
+    for (var t = 0; t < view.length; t++) totalKb += view[t].sizeKb || 0;
+    var updates = 0;
+    for (var u = 0; u < apps.length; u++) if (apps[u].latest && !ignored[apps[u].key]) updates++;
+    var missing = 0;
+    for (var m = 0; m < apps.length; m++) if (apps[m].missing) missing++;
+    $('tabCount').innerHTML = updates ? ' (' + updates + ')' : '';
+    $('missCount').innerHTML = missing ? ' (' + missing + ')' : '';
+    var count = T('count.programs', view.length, apps.length);
+    if (updates) count += ' \u00b7 ' + T('count.updates', updates);
+    if (totalKb) count += ' \u00b7 ' + T('count.listed', fmtSize(totalKb * 1024));
+    $('count').innerHTML = esc(count);
+
+    syncHeader();
+    updateButtons();
+}
+
+/* ---------- app installer list ---------- */
+
+function findSearch(id) {
+    for (var i = 0; i < searchResults.length; i++) {
+        if (searchResults[i].id === id) return searchResults[i];
+    }
+    return null;
+}
+
+function renderSearch() {
+    var wrap = $('bodyWrap');
+    var scroll = wrap.scrollTop;
+    var html = '<table class="grid"><colgroup>' + COLS_INSTALL + '</colgroup><tbody>';
+
+    for (var j = 0; j < searchResults.length; j++) {
+        var r = searchResults[j];
+        var cls = 'row' + (j % 2 ? ' alt' : '') + (r.id === installSelected ? ' sel' : '');
+        html += '<tr class="' + cls + '">';
+        html += '<td class="nm" title="' + esc(r.name) + '">' + esc(r.name) + '</td>';
+        html += '<td class="mono" title="' + esc(r.id) + '">' + esc(r.id) + '</td>';
+        var info = r.match || r.source || '';
+        html += '<td>' + (r.version ? esc(r.version) : '<span class="muted">&mdash;</span>') + '</td>';
+        html += '<td>' + (info ? esc(info) : '<span class="muted">&mdash;</span>') + '</td>';
+        if (r.id === installingId) {
+            html += '<td><div class="upd"><div class="pfill" id="ipfill"></div>'
+                 + '<span class="pct" id="ippct">' + installPct + '%</span></div></td>';
+        } else {
+            html += '<td><a href="#" class="rowinst">' + esc(T('btn.install')) + '</a></td>';
+        }
+        html += '</tr>';
+    }
+
+    if (!searchResults.length) {
+        var empty;
+        if (searching) empty = T('status.searching');
+        else if (!lastQuery) empty = T('status.searchEmpty');
+        else empty = T('status.noPackages');
+        html += '<tr><td colspan="5" class="empty">' + esc(empty) + '</td></tr>';
+    }
+    html += '</tbody></table>';
+
+    wrap.innerHTML = html;
+    wrap.scrollTop = scroll;
+    if (installingId && $('ipfill')) $('ipfill').style.width = installPct + '%';
+    $('count').innerHTML = searchResults.length
+        ? esc(T('count.packages', searchResults.length)) : '';
+    syncHeader();
+    updateButtons();
+}
+
+function fmtSize(bytes) {
+    if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+    if (bytes >= 1024) return Math.round(bytes / 1024) + ' KB';
+    return bytes + ' B';
+}
+
+function syncHeader() {
+    var wrap = $('bodyWrap');
+    var bar = wrap.offsetWidth - wrap.clientWidth;
+    $('headWrap').style.paddingRight = (bar > 0 ? bar : 0) + 'px';
+}
+
+/* ---------- language ---------- */
+
+var L = {};
+var langCode = 'en';
+var LANGS = ['en', 'fr', 'ar'];
+
+function parseLang(text) {
+    var map = {};
+    if (!text) return map;
+    var lines = text.split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (!line || line.charAt(0) === '#') continue;
+        var eq = line.indexOf('=');
+        if (eq < 1) continue;
+        map[line.substring(0, eq)] = line.substring(eq + 1).replace(/\\n/g, '\n');
+    }
+    return map;
+}
+
+function loadLangFile(code) {
+    var text = '';
+    try { text = window.external.GetLanguage(code); } catch (e) { text = ''; }
+    return parseLang(text);
+}
+
+/* missing keys fall back to English; {1} and {2} are the only placeholders */
+function T(key, a, b) {
+    var text = L[key];
+    if (text === undefined || text === null) text = key;
+    if (a !== undefined) text = text.replace(/\{1\}/g, a);
+    if (b !== undefined) text = text.replace(/\{2\}/g, b);
+    return text;
+}
+
+function applyLanguage() {
+    var nodes = document.getElementsByTagName('*');
+    for (var i = 0; i < nodes.length; i++) {
+        var key = nodes[i].getAttribute ? nodes[i].getAttribute('data-t') : null;
+        if (key) nodes[i].innerHTML = esc(T(key));
+        var titleKey = nodes[i].getAttribute ? nodes[i].getAttribute('data-t-title') : null;
+        if (titleKey) nodes[i].title = T(titleKey);
+    }
+    document.title = T('app.title');
+    applyTheme(isDark);
+    buildHeader();
+    fillPublishers();
+    setSizeButton();
+    render();
+    refreshDetails();
+}
+
+function useLanguage(code) {
+    langCode = code;
+    L = loadLangFile('en');
+    if (code !== 'en') {
+        var extra = loadLangFile(code);
+        for (var k in extra) L[k] = extra[k];
+    }
+    $('lang').value = code;
+    applyLanguage();
+}
+
+function setLanguage(code) {
+    useLanguage(code);
+    try { window.external.SetSetting('lang', code); } catch (e) { }
+}
+
+function loadLanguage() {
+    var saved = '';
+    try { saved = window.external.GetSetting('lang'); } catch (e) { saved = ''; }
+    var code = saved || 'en';
+    var known = false;
+    for (var i = 0; i < LANGS.length; i++) if (LANGS[i] === code) known = true;
+    useLanguage(known ? code : 'en');
+}
+
+/* ---------- ignored updates ---------- */
+
+function loadIgnored() {
+    var raw = '';
+    try { raw = window.external.GetSetting('ignored'); } catch (e) { raw = ''; }
+    ignored = {};
+    var parts = String(raw || '').split('\n');
+    for (var i = 0; i < parts.length; i++) if (parts[i]) ignored[parts[i]] = 1;
+}
+
+function saveIgnored() {
+    var keys = [];
+    for (var k in ignored) if (ignored[k]) keys.push(k);
+    try { window.external.SetSetting('ignored', keys.join('\n')); } catch (e) { }
+}
+
+function isIgnored(app) {
+    return !!(app && app.latest && ignored[app.key]);
+}
+
+/* ---------- publisher filter ---------- */
+
+function fillPublishers() {
+    var sel = $('pub');
+    if (!sel) return;
+    var keep = sel.value;
+    var names = {};
+    for (var i = 0; i < apps.length; i++) {
+        var p = apps[i].publisher || '';
+        if (p) names[p] = 1;
+    }
+    var list = [];
+    for (var n in names) list.push(n);
+    list.sort(function (a, b) {
+        var x = a.toLowerCase(), y = b.toLowerCase();
+        return x < y ? -1 : (x > y ? 1 : 0);
+    });
+
+    sel.options.length = 0;
+    sel.options.add(new Option(T('pub.all'), ''));
+    for (var j = 0; j < list.length; j++) sel.options.add(new Option(list[j], list[j]));
+    sel.value = keep;
+    if (!sel.value) sel.selectedIndex = 0;
+}
+
+/* ---------- theme ---------- */
+
+function applyTheme(dark) {
+    isDark = dark;
+    document.body.className = dark ? 'dark' : '';
+    $('btnTheme').innerHTML = esc(dark ? T('btn.light') : T('btn.dark'));
+}
+
+function loadTheme() {
+    var value = '';
+    try { value = window.external.GetSetting('theme'); } catch (e) { value = ''; }
+    if (!value) {
+        try { value = window.external.GetSystemTheme(); } catch (e) { value = ''; }
+    }
+    applyTheme(value !== 'light');   // dark unless the user or Windows says light
+}
+
+function toggleTheme() {
+    applyTheme(!isDark);
+    try { window.external.SetSetting('theme', isDark ? 'dark' : 'light'); } catch (e) { }
+}
+
+/* ---------- sorting ---------- */
+
+function sortBy(key) {
+    if (sortKey === key) sortDir = -sortDir;
+    else { sortKey = key; sortDir = 1; }
+    render();
+    updateArrows();
+    saveSort();
+}
+
+function saveSort() {
+    try { window.external.SetSetting('sort', sortKey + '|' + sortDir); } catch (e) { }
+}
+
+function loadSort() {
+    var value = '';
+    try { value = window.external.GetSetting('sort'); } catch (e) { value = ''; }
+    if (!value) return;
+    var parts = value.split('|');
+    if (parts.length !== 2) return;
+    var dir = parseInt(parts[1], 10);
+    if (dir !== 1 && dir !== -1) return;
+    var keys = ['name', 'version', 'update', 'publisher', 'installed', 'size'];
+    for (var i = 0; i < keys.length; i++) {
+        if (keys[i] === parts[0]) { sortKey = keys[i]; sortDir = dir; return; }
+    }
+}
+
+function updateArrows() {
+    var keys = ['name', 'version', 'update', 'publisher', 'installed', 'size'];
+    for (var i = 0; i < keys.length; i++) {
+        var arrow = $('ar-' + keys[i]);
+        var head = $('th-' + keys[i]);
+        if (!arrow || !head) continue;
+        if (keys[i] === sortKey) {
+            arrow.className = 'arr ' + (sortDir > 0 ? 'up' : 'dn');
+            head.className = 'sortable sorted';
+        } else {
+            arrow.className = 'arr';
+            head.className = 'sortable';
+        }
+    }
+}
+
+function sortView() {
+    view.sort(function (a, b) {
+        var av = sortValue(a), bv = sortValue(b);
+
+        // unknown values always sink to the bottom
+        if (!av && bv) return 1;
+        if (av && !bv) return -1;
+        if (!av && !bv) return byName(a, b);
+
+        var c;
+        if (sortKey === 'version' || sortKey === 'update') c = compareVersions(av, bv);
+        else if (sortKey === 'size') c = av < bv ? -1 : (av > bv ? 1 : 0);
+        else c = compareText(av, bv);
+
+        return c === 0 ? byName(a, b) : c * sortDir;
+    });
+}
+
+function sortValue(app) {
+    if (sortKey === 'size') return app.sizeKb || 0;
+    if (sortKey === 'update') return app.latest || '';
+    return app[sortKey] || '';
+}
+
+function byName(a, b) {
+    return compareText(a.name, b.name);
+}
+
+function compareText(a, b) {
+    a = String(a).toLowerCase();
+    b = String(b).toLowerCase();
+    return a < b ? -1 : (a > b ? 1 : 0);
+}
+
+function compareVersions(a, b) {
+    var left = String(a).toLowerCase().split(/[^0-9a-z]+/);
+    var right = String(b).toLowerCase().split(/[^0-9a-z]+/);
+    var count = Math.max(left.length, right.length);
+    for (var i = 0; i < count; i++) {
+        var x = left[i] || '';
+        var y = right[i] || '';
+        if (x === y) continue;
+        if (/^[0-9]+$/.test(x) && /^[0-9]+$/.test(y)) {
+            var d = parseInt(x, 10) - parseInt(y, 10);
+            if (d !== 0) return d < 0 ? -1 : 1;
+            continue;
+        }
+        return x < y ? -1 : 1;
+    }
+    return 0;
+}
+
+function updateButtons() {
+    var installMode = tabMode === 'install';
+    var app = findApp(selectedKey);
+    setEnabled($('btnUninstall'), !installMode && !!app && app.hasUninstall);
+    setEnabled($('btnUpdate'), !installMode && !!app && !!app.latest);
+    setEnabled($('btnFolder'), !installMode && !!app && !!app.location);
+    setEnabled($('btnInstall'), installMode && !!findSearch(installSelected));
+    setEnabled($('btnExport'), !installMode);
+    setEnabled($('btnSizes'), !installMode);
+
+    var hasUpdate = false;
+    for (var i = 0; i < apps.length; i++) {
+        if (apps[i].latest && !ignored[apps[i].key]) { hasUpdate = true; break; }
+    }
+    setEnabled($('btnUpdateAll'), !installMode && hasUpdate);
+}
+
+/* ---------- selection & details ---------- */
+
+function rowApp(e) {
+    e = e || window.event;
+    var el = e.target || e.srcElement;
+    while (el && el.tagName && el.tagName.toUpperCase() !== 'TR') el = el.parentNode;
+    if (!el || !el.parentNode || el.parentNode.tagName.toUpperCase() !== 'TBODY') return null;
+
+    var index = 0;
+    var node = el;
+    while ((node = node.previousSibling)) {
+        if (node.nodeType === 1) index++;
+    }
+    return index < view.length ? view[index] : null;
+}
+
+function rowSearch(e) {
+    e = e || window.event;
+    var el = e.target || e.srcElement;
+    while (el && el.tagName && el.tagName.toUpperCase() !== 'TR') el = el.parentNode;
+    if (!el || !el.parentNode || el.parentNode.tagName.toUpperCase() !== 'TBODY') return null;
+
+    var index = 0;
+    var node = el;
+    while ((node = node.previousSibling)) {
+        if (node.nodeType === 1) index++;
+    }
+    return index < searchResults.length ? searchResults[index] : null;
+}
+
+function select(app) {
+    selectedKey = app.key;
+    render();
+    showDetails(app);
+}
+
+function showDetails(app) {
+    var box = $('detailsBody');
+    if (!app) {
+        box.innerHTML = '<div class="pad muted">' + esc(T('details.hint')) + '</div>';
+        return;
+    }
+
+    var info = {};
+    try { info = JSON.parse(window.external.Details(app.key)); } catch (e) { info = {}; }
+
+    var dash = '<span class="muted">&mdash;</span>';
+    var size = app.size ? esc(app.size) : dash;
+    if (info.sizePending) size = '<span class="muted">' + esc(T('details.calculating')) + '</span>';
+
+    var rows = '';
+    rows += '<tr><td class="k">' + esc(T('details.program')) + '</td><td><b>' + esc(app.name) + '</b></td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.publisher')) + '</td><td>' + (app.publisher ? esc(app.publisher) : dash) + '</td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.version')) + '</td><td>' + (app.version ? esc(app.version) : dash) + '</td></tr>';
+    var otherVersions = [];
+    for (var ov = 0; ov < apps.length; ov++) {
+        var other = apps[ov];
+        if (other.key === app.key) continue;
+        if ((other.name || '').toLowerCase() !== (app.name || '').toLowerCase()) continue;
+        if ((other.version || '') === (app.version || '')) continue;
+        otherVersions.push(other.version || '?');
+    }
+    if (otherVersions.length) {
+        rows += '<tr><td class="k">' + esc(T('details.versions')) + '</td><td>' + esc(otherVersions.join(', ')) + '</td></tr>';
+    }
+    if (app.latest) {
+        var source = app.provider ? ' ' + esc(T('details.via', app.provider)) : '';
+        if (app.wingetId) source += ' &middot; <span class="mono">' + esc(app.wingetId) + '</span>';
+        rows += '<tr><td class="k">' + esc(T('details.update')) + '</td><td><span class="badge">' + esc(app.latest) + '</span>' + source + '</td></tr>';
+    }
+    rows += '<tr><td class="k">' + esc(T('details.installed')) + '</td><td>' + (app.installed ? esc(app.installed) : dash) + '</td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.size')) + '</td><td>' + size + '</td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.path')) + '</td><td class="mono">' + (app.location ? esc(app.location) : '<span class="muted">' + esc(T('details.notReported')) + '</span>') + (app.missing ? ' <span class="pill miss">' + esc(T('badge.missing')) + '</span>' : '') + '</td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.uninstall')) + '</td><td class="mono">' + (info.uninstall ? esc(info.uninstall) : '<span class="muted">' + esc(T('details.notReported')) + '</span>') + '</td></tr>';
+    if (info.startup) {
+        rows += '<tr><td class="k">' + esc(T('details.startup')) + '</td><td>' + esc(T('details.startupYes')) + '</td></tr>';
+    }
+    rows += '<tr><td class="k">' + esc(T('details.registry')) + '</td><td class="mono">' + (info.registryPath ? esc(info.registryPath) : '') + '</td></tr>';
+
+    box.innerHTML = '<div class="pad"><table class="dt">' + rows + '</table></div>';
+}
+
+function refreshDetails() {
+    if (tabMode === 'install') showSearchDetails(findSearch(installSelected));
+    else showDetails(findApp(selectedKey));
+}
+
+function showSearchDetails(item) {
+    var box = $('detailsBody');
+    if (!item) {
+        box.innerHTML = '<div class="pad muted">' + esc(T('details.installSelect')) + '</div>';
+        return;
+    }
+    var dash = '<span class="muted">&mdash;</span>';
+    var rows = '';
+    rows += '<tr><td class="k">' + esc(T('details.package')) + '</td><td><b>' + esc(item.name) + '</b></td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.id')) + '</td><td class="mono">' + esc(item.id) + '</td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.version')) + '</td><td>' + (item.version ? esc(item.version) : dash) + '</td></tr>';
+    rows += '<tr><td class="k">' + esc(T('details.source')) + '</td><td>' + (item.source ? esc(item.source) : dash) + '</td></tr>';
+    box.innerHTML = '<div class="pad"><table class="dt">' + rows + '</table>'
+        + '<div class="pad muted" style="padding:10px 0 0 0">' + esc(T('details.installHint')) + '</div></div>';
+}
+
+/* ---------- actions ---------- */
+
+function actUninstall() {
+    var app = findApp(selectedKey);
+    if (!app) return;
+    if (!window.confirm(T('status.confirmUninstall', app.name))) return;
+    var error = '';
+    try { error = window.external.Uninstall(app.key); }
+    catch (e) { error = T('status.uninstallFail', e.message); }
+    if (error) { setStatus(error, 'err'); return; }
+    setStatus(T('status.uninstallStarted', app.name));
+}
+
+function actUpdate() {
+    var app = findApp(selectedKey);
+    if (!app || !app.latest) return;
+    if (!window.confirm(T('status.confirmUpdate', app.name, app.latest))) return;
+    var error = '';
+    try { error = window.external.UpdateApp(app.key); }
+    catch (e) { error = T('status.updateStartFail', e.message); }
+    if (error) { setStatus(error, 'err'); return; }
+    startCellProgress([app.key]);
+    setStatus(T('status.updating', app.name));
+}
+
+function actUpdateAll() {
+    var keys = [];
+    var skip = [];
+    for (var i = 0; i < apps.length; i++) {
+        if (!apps[i].latest) continue;
+        if (ignored[apps[i].key]) skip.push(apps[i].key); else keys.push(apps[i].key);
+    }
+    if (!keys.length) { setStatus(T('status.noUpdates'), 'warn'); return; }
+    if (!window.confirm(T('status.confirmUpdateAll', keys.length))) return;
+
+    var error = '';
+    try { error = window.external.UpdateAll(skip.join('\n')); }
+    catch (e) { error = T('status.bulkStartFail', e.message); }
+    if (error) { setStatus(error, 'err'); return; }
+    startCellProgress(keys);
+    setStatus(T('status.updatingAll'));
+}
+
+function actIgnore() {
+    var app = findApp(selectedKey);
+    if (!app || !app.latest) return;
+    if (ignored[app.key]) delete ignored[app.key];
+    else ignored[app.key] = 1;
+    saveIgnored();
+    render();
+    refreshDetails();
+    setStatus(T(ignored[app.key] ? 'status.ignored' : 'status.unignored', app.name));
+}
+
+function csvCell(value) {
+    value = (value === null || value === undefined) ? '' : String(value);
+    if (/^[=+\-@\t\r]/.test(value)) value = "'" + value;   // keep Excel from running it as a formula
+    return '"' + value.replace(/"/g, '""') + '"';
+}
+
+function setSizeButton() {
+    var b = $('btnSizes');
+    if (!b) return;
+    b.innerHTML = esc(measuringSizes ? T('btn.cancelSizes') : T('btn.sizes'));
+}
+
+function actMeasureSizes() {
+    if (measuringSizes) {
+        try { window.external.CancelSizes(); } catch (e) { }
+        setStatus(T('status.sizeCancel'), 'warn');
+        return;
+    }
+    var keys = [];
+    for (var i = 0; i < apps.length; i++) {
+        if (apps[i].location) keys.push(apps[i].key);
+    }
+    if (!keys.length) { setStatus(T('status.noPaths'), 'warn'); return; }
+    if (!window.confirm(T('status.confirmSizes', keys.length))) return;
+
+    var error = '';
+    measuringSizes = true;
+    try { error = window.external.MeasureSizes(keys.join('\n')); }
+    catch (e) { error = T('status.sizeStartFail', e.message); }
+    if (error) { measuringSizes = false; setSizeButton(); setStatus(error, 'err'); return; }
+    setSizeButton();
+    setStatus(T('status.measuring', keys.length));
+}
+
+function exportCsv() {
+    var head = [T('col.program'), T('col.version'), T('col.update'), T('col.publisher'),
+                T('col.installed'), T('col.size'), T('details.path')];
+    for (var h = 0; h < head.length; h++) head[h] = csvCell(head[h]);
+    var lines = [head.join(',')];
+    for (var i = 0; i < view.length; i++) {
+        var a = view[i];
+        lines.push([
+            csvCell(a.name), csvCell(a.version), csvCell(a.latest), csvCell(a.publisher),
+            csvCell(a.installed), csvCell(a.size), csvCell(a.location)
+        ].join(','));
+    }
+    var error = '';
+    try { error = window.external.SaveCsv(lines.join('\r\n')); }
+    catch (e) { error = T('status.exportStartFail', e.message); }
+
+    if (!error) setStatus(T('status.exported', view.length), 'ok');
+    else if (error === 'Export cancelled.') setStatus(T('status.exportCancelled'), 'warn');
+    else setStatus(error, 'err');
+}
+
+function actFolder() {
+    var app = findApp(selectedKey);
+    if (!app) return;
+    var error = '';
+    try { error = window.external.OpenFolder(app.key); }
+    catch (e) { error = T('status.folderFail', e.message); }
+    if (error) setStatus(error, 'err');
+}
+
+function actRun() {
+    var app = findApp(selectedKey);
+    if (!app || !app.runnable) return;
+    var error = '';
+    try { error = window.external.Run(app.key); }
+    catch (e) { error = T('status.runFail', e.message); }
+    if (error) setStatus(error, 'err');
+}
+
+function copyPath() {
+    var app = findApp(selectedKey);
+    if (!app || !app.location) return;
+    var error = '';
+    try { error = window.external.CopyText(app.location); }
+    catch (e) { error = T('status.copyPathFail', e.message); }
+    setStatus(error ? error : T('status.copyPathOk'), error ? 'err' : 'ok');
+}
+
+function copyNameVersion() {
+    var app = findApp(selectedKey);
+    if (!app) return;
+    var text = app.name + (app.version ? ' ' + app.version : '');
+    var error = '';
+    try { error = window.external.CopyText(text); }
+    catch (e) { error = T('status.copyFail', e.message); }
+    setStatus(error ? error : T('status.copied', text), error ? 'err' : 'ok');
+}
+
+function openRegistry() {
+    var app = findApp(selectedKey);
+    if (!app) return;
+    var error = '';
+    try { error = window.external.OpenRegistry(app.key); }
+    catch (e) { error = T('status.registryFail', e.message); }
+    if (error) setStatus(error, 'err');
+}
+
+/* ---------- right-click menu ---------- */
+
+function menuItem(id, label, disabled) {
+    return '<div class="mi' + (disabled ? ' off' : '') + '" id="mi-' + id + '">' + esc(label) + '</div>';
+}
+
+function showMenu(app, x, y) {
+    var menu = $('menu');
+    var html = '';
+    html += menuItem('run', T('menu.run'), !app.runnable);
+    html += '<div class="msep"></div>';
+    html += menuItem('uninstall', T('menu.uninstall'), !app.hasUninstall);
+    html += menuItem('update', app.latest ? T('menu.updateTo', app.latest) : T('menu.update'), !app.latest);
+    html += menuItem('ignore', isIgnored(app) ? T('menu.unignore') : T('menu.ignore'), !app.latest);
+    html += '<div class="msep"></div>';
+    html += menuItem('folder', T('menu.folder'), !app.location);
+    html += menuItem('copy', T('menu.copyPath'), !app.location);
+    html += menuItem('copyname', T('menu.copyName'), false);
+    html += '<div class="msep"></div>';
+    html += menuItem('registry', T('menu.registry'), false);
+
+    menu.innerHTML = html;
+    menu.style.display = 'block';
+
+    var width = menu.offsetWidth;
+    var height = menu.offsetHeight;
+    var viewW = document.documentElement.clientWidth || document.body.clientWidth;
+    var viewH = document.documentElement.clientHeight || document.body.clientHeight;
+
+    if (x + width > viewW - 4) x = viewW - width - 4;
+    if (y + height > viewH - 4) y = viewH - height - 4;
+    menu.style.left = (x < 4 ? 4 : x) + 'px';
+    menu.style.top = (y < 4 ? 4 : y) + 'px';
+}
+
+function hideMenu() {
+    $('menu').style.display = 'none';
+}
+
+function openContextMenu(e) {
+    e = e || window.event;
+    hideMenu();
+    if (tabMode === 'install') return false;
+    if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+
+    var app = rowApp(e);
+    if (!app) return false;
+
+    select(app);
+    showMenu(app, e.clientX, e.clientY);
+    return false;
+}
+
+function runMenu(id) {
+    if (id === 'mi-run') actRun();
+    else if (id === 'mi-uninstall') actUninstall();
+    else if (id === 'mi-update') actUpdate();
+    else if (id === 'mi-ignore') actIgnore();
+    else if (id === 'mi-folder') actFolder();
+    else if (id === 'mi-copy') copyPath();
+    else if (id === 'mi-copyname') copyNameVersion();
+    else if (id === 'mi-registry') openRegistry();
+}
+
+/* ---------- keyboard ---------- */
+
+function moveSelection(delta) {
+    var installMode = tabMode === 'install';
+    var list = installMode ? searchResults : view;
+    if (!list.length) return;
+
+    var current = installMode ? installSelected : selectedKey;
+    var index = -1;
+    for (var i = 0; i < list.length; i++) {
+        var id = installMode ? list[i].id : list[i].key;
+        if (id === current) { index = i; break; }
+    }
+    index = index < 0 ? (delta > 0 ? 0 : list.length - 1) : index + delta;
+    if (index < 0) index = 0;
+    if (index >= list.length) index = list.length - 1;
+
+    if (installMode) selectSearch(list[index]); else select(list[index]);
+    var rows = $('bodyWrap').getElementsByTagName('TR');
+    if (rows[index] && rows[index].scrollIntoView) rows[index].scrollIntoView(false);
+}
+
+/* ---------- update log ---------- */
+
+function showLog() {
+    var text = '';
+    try { text = window.external.GetLastLog(); }
+    catch (e) { text = T('status.logFail', e.message); }
+    $('logText').innerHTML = esc(text || T('status.logEmpty'));
+    $('log').style.display = 'block';
+}
+
+function hideLog() {
+    $('log').style.display = 'none';
+}
+
+function showLogLink() {
+    $('logLink').style.display = 'inline';
+}
+
+function hideLogLink() {
+    $('logLink').style.display = 'none';
+}
+
+function checkUpdates() {
+    var result = '';
+    try { result = window.external.CheckUpdates(); }
+    catch (e) { setStatus(T('status.checkFailed', e.message), 'err'); return; }
+
+    if (result === 'notfound') {
+        setStatus(T('status.noTools'), 'warn');
+        return;
+    }
+    if (result === 'busy') return;
+    updatesChecked = true;
+    setStatus(T('status.checking', 'winget'));
+}
+
+/* ---------- winget ---------- */
+
+function showWingetLink() {
+    var show = '';
+    try { show = window.external.CanInstallWinget(); } catch (e) { show = ''; }
+    $('wingetLink').style.display = show === '1' ? 'inline' : 'none';
+}
+
+function installWinget() {
+    if (!window.confirm(T('status.confirmWinget'))) return;
+
+    var error = '';
+    try { error = window.external.InstallWinget(); }
+    catch (e) { error = T('status.wingetStartFail', e.message); }
+    if (error) { setStatus(error, 'err'); return; }
+
+    $('wingetLink').style.display = 'none';
+    setStatus(T('status.downloadingWinget', 0));
+}
+
+function onWingetProgress(percent) {
+    setStatus(T('status.downloadingWinget', percent));
+}
+
+function onWingetInstalled(ok, message) {
+    setStatus(message, ok === '1' ? 'ok' : 'err');
+    if (ok === '1') checkUpdates(); else showWingetLink();
+}
+
+/* ---------- app self-update ---------- */
+
+function setAppUpd(text, cls) {
+    var b = $('appUpd');
+    if (!b) return;
+    b.innerHTML = esc(text);
+    b.className = cls || '';
+}
+
+function checkAppUpdate() {
+    var error = '';
+    try { error = window.external.CheckAppUpdate(); }
+    catch (e) { error = e.message; }
+    if (error) { setStatus(error, 'err'); return; }
+    setAppUpd(T('status.checkingApp'), 'busy');
+    setStatus(T('status.checkingApp'));
+}
+
+function onAppUpdate(raw) {
+    var info = {};
+    try { info = JSON.parse(raw); } catch (e) { info = {}; }
+    if (info.error) { setAppUpd(T('btn.appUpdate')); setStatus(info.error, 'err'); return; }
+    if (!info.available) {
+        setAppUpd(T('btn.appUpdate'));
+        setStatus(T('status.appLatest', info.current), 'ok');
+        return;
+    }
+    if (!window.confirm(T('status.confirmAppUpdate', info.version, info.current))) {
+        setAppUpd(T('btn.appUpdate'));
+        setStatus(T('status.appLatest', info.current));
+        return;
+    }
+    var error = '';
+    try { error = window.external.InstallAppUpdate(); }
+    catch (e) { error = e.message; }
+    if (error) { setAppUpd(T('btn.appUpdate')); setStatus(error, 'err'); return; }
+    setAppUpd(T('status.appDownloading', 0), 'hot');
+    setStatus(T('status.appDownloading', 0));
+}
+
+function onAppUpdateProgress(percent) {
+    setAppUpd(T('status.appDownloading', percent), 'hot');
+    setStatus(T('status.appDownloading', percent));
+}
+
+function onAppUpdateReady(ok, message) {
+    if (ok === '1') {
+        setAppUpd(T('status.appInstallingShort'), 'hot');
+        setStatus(T('status.appInstalling'), 'ok');
+        return;
+    }
+    setAppUpd(T('btn.appUpdate'), 'hot');
+    setStatus(message, 'err');
+}
+
+/* ---------- app installer (winget search) ---------- */
+
+function runSearch() {
+    var q = $('q').value;
+    if (!q || !q.replace(/\s/g, '')) {
+        searchResults = [];
+        installSelected = '';
+        lastQuery = '';
+        renderSearch();
+        setStatus(T('status.searchEmpty'));
+        return;
+    }
+
+    lastQuery = q;
+    searching = true;
+    installSelected = '';
+    searchResults = [];
+    renderSearch();
+    setStatus(T('status.searching'));
+
+    var result = '';
+    try { result = window.external.SearchWinget(q); }
+    catch (e) {
+        searching = false;
+        renderSearch();
+        setStatus(T('status.searchFailed', e.message), 'err');
+        return;
+    }
+    if (result === 'notfound') {
+        searching = false;
+        renderSearch();
+        setStatus(T('status.noTools'), 'warn');
+        return;
+    }
+    if (result === 'empty') {
+        searching = false;
+        renderSearch();
+        setStatus(T('status.searchEmpty'));
+        return;
+    }
+    if (result !== 'started' && result !== 'busy') {
+        searching = false;
+        renderSearch();
+        setStatus(T('status.searchFailed', result), 'err');
+    }
+}
+
+function selectSearch(item) {
+    installSelected = item.id;
+    renderSearch();
+    showSearchDetails(item);
+}
+
+function actInstall() {
+    var item = findSearch(installSelected);
+    if (!item) return;
+    if (!window.confirm(T('status.confirmInstall', item.name))) return;
+
+    var error = '';
+    try { error = window.external.InstallPackage(item.id, item.version || ''); }
+    catch (e) { error = T('status.installStartFail', e.message); }
+    if (error) { setStatus(error, 'err'); return; }
+
+    installingName = item.name;
+    installingId = item.id;
+    installPct = 0;
+    renderSearch();
+    setStatus(T('status.installing', item.name));
+}
+
+function onSearchResults(raw, error) {
+    searching = false;
+    if (error) {
+        searchResults = [];
+        renderSearch();
+        setStatus(T('status.searchFailed', error), 'err');
+        return;
+    }
+    try { searchResults = JSON.parse(raw); }
+    catch (e) { searchResults = []; }
+    if (installSelected && !findSearch(installSelected)) installSelected = '';
+    renderSearch();
+    refreshDetails();
+    setStatus(searchResults.length ? T('status.found', searchResults.length) : T('status.noPackages'),
+        searchResults.length ? 'ok' : 'warn');
+}
+
+function onInstallProgress(percent) {
+    installPct = percent;
+    if ($('ipfill')) $('ipfill').style.width = percent + '%';
+    if ($('ippct')) $('ippct').innerHTML = percent + '%';
+    setStatus(T('status.installingPct', installingName, percent));
+}
+
+function onInstallFinished(ok, message) {
+    installingId = '';
+    installPct = 0;
+    renderSearch();
+    if (ok === '1') refresh();
+    setStatus(message, ok === '1' ? 'ok' : 'err');
+    if (ok !== '1') showLogLink();
+}
+
+/* ---------- host callbacks ---------- */
+
+function onUpdatesReady(raw, provider, currentRaw) {
+    var list = [];
+    try { list = JSON.parse(raw); } catch (e) { return; }
+
+    for (var i = 0; i < apps.length; i++) {
+        apps[i].latest = '';
+        apps[i].wingetId = '';
+        apps[i].upToDate = false;
+    }
+    for (var j = 0; j < list.length; j++) {
+        var app = findApp(list[j].key);
+        if (!app) continue;
+        app.latest = list[j].latest;
+        app.wingetId = list[j].id;
+        if (provider) app.provider = provider;
+    }
+    if (currentRaw) {
+        var current = [];
+        try { current = JSON.parse(currentRaw); } catch (e2) { current = []; }
+        for (var k = 0; k < current.length; k++) {
+            var ok = findApp(current[k]);
+            if (ok) ok.upToDate = true;
+        }
+    }
+
+    render();
+    refreshDetails();
+    hideLogLink();
+    var shown = 0;
+    for (var n = 0; n < list.length; n++) if (!ignored[list[n].key]) shown++;
+    if (list.length && !shown) setStatus(T('status.allIgnored'), 'warn');
+    else setStatus(shown ? T('status.updatesAvailable', shown) : T('status.allUpToDate'),
+        shown ? 'ok' : '');
+}
+
+function onUpdatesFailed(message) {
+    showLogLink();
+    setStatus(T('status.checkFailed', message), 'err');
+}
+
+/* the background scan finished: replace the cached list, keeping update results already shown */
+function onAppsUpdated(raw) {
+    var list;
+    try { list = JSON.parse(raw); } catch (e) { return; }
+    $('cacheTag').style.display = 'none';
+    for (var i = 0; i < list.length; i++) {
+        var old = findApp(list[i].key);
+        if (!old) continue;
+        if (!list[i].latest) {
+            list[i].latest = old.latest;
+            list[i].wingetId = old.wingetId;
+        }
+        if (old.upToDate) list[i].upToDate = true;
+    }
+    apps = list;
+    if (selectedKey && !findApp(selectedKey)) {
+        selectedKey = '';
+        showDetails(null);
+    }
+    fillPublishers();
+    render();
+    refreshDetails();
+}
+
+function onSizeReady(key, text, bytes) {
+    var app = findApp(key);
+    if (!app) return;
+    app.size = text;
+    if (bytes > 0) app.sizeKb = Math.round(bytes / 1024);
+    render();
+    if (key === selectedKey) showDetails(app);
+}
+
+function onSizesDone(cancelled) {
+    measuringSizes = false;
+    setSizeButton();
+    if (cancelled === '1') setStatus(T('status.sizeCancelled'), 'warn');
+    else setStatus(T('status.sizeDone'), 'ok');
+}
+
+function onUninstalled(message) {
+    refresh();
+    setStatus(message);
+}
+
+function onUpdateFinished(key, ok, message) {
+    stopCellProgress();
+    refresh();
+    setStatus(message, ok === '1' ? 'ok' : 'err');
+    if (ok === '1') { hideLogLink(); checkUpdates(); }
+    else showLogLink();
+}
+
+function onUpdateAllFinished(ok, message) {
+    stopCellProgress();
+    refresh();
+    setStatus(message, ok === '1' ? 'ok' : 'err');
+    if (ok === '1') { hideLogLink(); checkUpdates(); }
+    else showLogLink();
+}
+
+/* ---------- custom title bar ---------- */
+
+var lastTitleDown = 0;
+
+function winAction(name) {
+    try { window.external[name](); } catch (e) { }
+}
+
+function stopEvent(e) {
+    e = e || window.event;
+    if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+    if (e.stopPropagation) e.stopPropagation(); else e.cancelBubble = true;
+}
+
+function titleMouseDown(e) {
+    e = e || window.event;
+    var el = e.target || e.srcElement;
+    while (el && el.id !== 'hdr') {
+        if (el.id === 'winctl' || el.id === 'hdrRight') return;
+        el = el.parentNode;
+    }
+    if (!el) return;
+
+    var now = new Date().getTime();
+    if (now - lastTitleDown < 400) {
+        lastTitleDown = 0;
+        winAction('WindowToggleMaximize');   // double-click the title bar
+        return;
+    }
+    lastTitleDown = now;
+    winAction('WindowDrag');
+}
+
+function onWindowState(max) {
+    var b = $('winMax');
+    if (!b) return;
+    b.innerHTML = max ? '&#10064;' : '&#9633;';
+    b.title = max ? 'Restore' : 'Maximize';
+}
+
+/* ---------- start ---------- */
+
+function buildHeader() {
+    if (tabMode === 'install') {
+        var scols = [['name', T('col.program')], ['id', T('col.id')],
+                     ['version', T('col.version')], ['match', T('col.match')],
+                     ['action', T('btn.install')]];
+        var shtml = '<table class="grid"><colgroup>' + COLS_INSTALL + '</colgroup><thead><tr>';
+        for (var s = 0; s < scols.length; s++) shtml += '<th>' + esc(scols[s][1]) + '</th>';
+        shtml += '</tr></thead></table>';
+        $('headWrap').innerHTML = shtml;
+        return;
+    }
+
+    var cols = [['name', T('col.program')], ['version', T('col.version')], ['update', T('col.update')],
+                ['publisher', T('col.publisher')], ['installed', T('col.installed')], ['size', T('col.size')]];
+    var html = '<table class="grid"><colgroup>' + COLS + '</colgroup><thead><tr>';
+    for (var i = 0; i < cols.length; i++) {
+        html += '<th class="sortable" id="th-' + cols[i][0] + '">' + esc(cols[i][1]) +
+            '<span class="arr" id="ar-' + cols[i][0] + '"></span></th>';
+    }
+    html += '</tr></thead></table>';
+    $('headWrap').innerHTML = html;
+
+    for (var j = 0; j < cols.length; j++) {
+        (function (key) {
+            on($('th-' + key), 'click', function () { sortBy(key); });
+        })(cols[j][0]);
+    }
+    updateArrows();
+}
+
+window.onload = function () {
+    if (!window.JSON) {
+        $('statusmsg').innerHTML = 'This page needs IE8 or newer (standards mode).';
+        return;
+    }
+
+    loadSort();
+    loadTheme();
+    loadLanguage();
+    loadIgnored();
+
+    on($('hdr'), 'mousedown', titleMouseDown);
+    on($('winMin'), 'click', function (e) { stopEvent(e); winAction('WindowMinimize'); });
+    on($('winMax'), 'click', function (e) { stopEvent(e); winAction('WindowToggleMaximize'); });
+    on($('winClose'), 'click', function (e) { stopEvent(e); winAction('WindowClose'); });
+    on($('appUpd'), 'click', function (e) { stopEvent(e); checkAppUpdate(); });
+    try { onWindowState(window.external.GetWindowState() === '1'); } catch (e) { }
+
+    on($('btnRefresh'), 'click', function () {
+        if (tabMode === 'install') runSearch(); else refresh();
+    });
+    on($('btnUninstall'), 'click', actUninstall);
+    on($('btnUpdate'), 'click', actUpdate);
+    on($('btnUpdateAll'), 'click', actUpdateAll);
+    on($('btnInstall'), 'click', actInstall);
+    on($('btnFolder'), 'click', actFolder);
+    on($('btnUpdates'), 'click', checkUpdates);
+    on($('btnExport'), 'click', exportCsv);
+    on($('btnSizes'), 'click', actMeasureSizes);
+    on($('btnTheme'), 'click', toggleTheme);
+    on($('lang'), 'change', function () {
+        setLanguage(this.value);
+        setStatus(T('status.languageChanged'), 'ok');
+    });
+    on($('tabAll'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        setTab('all');
+        return false;
+    });
+    on($('tabUpdates'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        setTab('updates');
+        return false;
+    });
+    on($('tabMs'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        setTab('ms');
+        return false;
+    });
+    on($('tabMissing'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        setTab('missing');
+        return false;
+    });
+    on($('tabInstall'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        setTab('install');
+        return false;
+    });
+    on($('lnkLog'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        showLog();
+        return false;
+    });
+    on($('lnkLogClose'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        hideLog();
+        return false;
+    });
+    on($('lnkWinget'), 'click', function (e) {
+        if (e && e.preventDefault) e.preventDefault(); else if (window.event) window.event.returnValue = false;
+        installWinget();
+        return false;
+    });
+    on($('q'), 'keyup', function () {
+        if (tabMode !== 'install') render();
+    });
+    on($('q'), 'input', function () {
+        if (tabMode !== 'install') render();
+    });
+    on($('pub'), 'change', function () {
+        if (tabMode !== 'install') render();
+    });
+    on($('q'), 'keydown', function (e) {
+        e = e || window.event;
+        if (e.keyCode === 13 && tabMode === 'install') {
+            if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+            runSearch();
+        }
+    });
+    on($('bodyWrap'), 'click', function (e) {
+        if (tabMode === 'install') {
+            var item = rowSearch(e);
+            if (!item) return;
+            selectSearch(item);
+
+            e = e || window.event;
+            var el = e.target || e.srcElement;
+            while (el && el.tagName && el.tagName.toUpperCase() !== 'A') el = el.parentNode;
+            if (el && el.className && el.className.indexOf('rowinst') >= 0) {
+                if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+                actInstall();
+            }
+            return;
+        }
+        var app = rowApp(e);
+        if (app) select(app);
+    });
+    on($('bodyWrap'), 'dblclick', function (e) {
+        if (tabMode === 'install') return;
+        var app = rowApp(e);
+        if (app && app.location) { select(app); actFolder(); }
+    });
+    on($('bodyWrap'), 'contextmenu', openContextMenu);
+    on($('bodyWrap'), 'scroll', hideMenu);
+    on(document, 'click', hideMenu);
+    on(document, 'keydown', function (e) {
+        e = e || window.event;
+        var code = e.keyCode;
+        var target = e.target || e.srcElement;
+        var tag = target && target.tagName ? target.tagName.toUpperCase() : '';
+
+        if (code === 27) {
+            hideMenu();
+            hideLog();
+            if (tag === 'INPUT') {
+                $('q').value = '';
+                if (tabMode === 'install') { searchResults = []; installSelected = ''; lastQuery = ''; }
+                render();
+                $('q').blur();
+            }
+            return;
+        }
+        if ((e.ctrlKey || e.metaKey) && code === 70) {
+            if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+            $('q').focus();
+            return;
+        }
+        if (code === 116) {
+            if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+            hideMenu();
+            if (tabMode === 'install') runSearch(); else refresh();
+            return;
+        }
+        if ($('log').style.display === 'block') return;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+
+        if (code === 38) {
+            if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+            moveSelection(-1);
+        } else if (code === 40) {
+            if (e.preventDefault) e.preventDefault(); else e.returnValue = false;
+            moveSelection(1);
+        } else if (code === 13 && tabMode !== 'install') {
+            var app = findApp(selectedKey);
+            if (app && app.location) actFolder();
+        }
+    });
+    on($('menu'), 'click', function (e) {
+        e = e || window.event;
+        var target = e.target || e.srcElement;
+        if (!target || !target.id || target.id.indexOf('mi-') !== 0) return;
+        if (target.className.indexOf('off') >= 0) return;
+        hideMenu();
+        runMenu(target.id);
+    });
+    on($('menu'), 'mouseover', function (e) {
+        var target = (e || window.event).target || (e || window.event).srcElement;
+        if (target && target.id && target.id.indexOf('mi-') === 0 && target.className.indexOf('off') < 0) {
+            target.className = 'mi hov';
+        }
+    });
+    on($('menu'), 'mouseout', function (e) {
+        var target = (e || window.event).target || (e || window.event).srcElement;
+        if (!target || !target.id || target.id.indexOf('mi-') !== 0) return;
+        target.className = target.className.indexOf('off') >= 0 ? 'mi off' : 'mi';
+    });
+    on(window, 'resize', hideMenu);
+    on(window, 'resize', syncHeader);
+
+    refresh();
+    var cached = '';
+    try { cached = window.external.WasCached(); } catch (e) { cached = ''; }
+    if (cached === '1') $('cacheTag').style.display = 'inline';
+    showWingetLink();
+    checkUpdates();
+};
+</script>
+</body>
+</html>
