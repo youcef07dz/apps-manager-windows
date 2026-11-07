@@ -78,24 +78,24 @@ the setup into `releases/`, update `version.json`, and run `push.cmd`.
 Needs the .NET Framework compiler and Inno Setup 5.6 in `C:\inno`.
 
 ```bat
-build.cmd          :: 64-bit exe  -> bin\AppsManager.exe
-build.cmd x86      :: 32-bit exe  -> bin\x86\AppsManager.exe
-build-setup.cmd    :: installers  -> dist\
-push.cmd           :: commit and push everything to GitHub
+src\build.cmd          :: 64-bit exe  -> src\bin\AppsManager.exe
+src\build.cmd x86      :: 32-bit exe  -> src\bin\x86\AppsManager.exe
+src\build-setup.cmd    :: installers  -> src\dist\
+push.cmd               :: commit and push everything to GitHub
 ```
 
 ### Repository layout
 
 | Path | What it is |
 | --- | --- |
-| `app.html` | the whole UI (IE8-safe HTML/CSS/JS) |
-| `*.cs` | app logic: scanning, winget, downloads, self-update |
-| `lang/` | English, French and Arabic strings |
-| `tools/aria2c.exe` | downloader used for winget and updates |
-| `tools/winget.zip` | packed winget, unpacked on first use |
+| `src/app.html` | the whole UI (IE8-safe HTML/CSS/JS) |
+| `src/*.cs` | app logic: scanning, winget, downloads, self-update |
+| `src/lang/` | English, French and Arabic strings |
+| `src/tools/aria2c.exe` | downloader used for winget and updates |
+| `src/tools/winget.zip` | packed winget, unpacked on first use |
 | `version.json` | update feed |
 | `releases/` | published setups |
-| `setup.iss` | Inno Setup script |
+| `src/setup.iss` | Inno Setup script |
 
 ---
 
@@ -151,10 +151,10 @@ démarrage rapide, peu de RAM et de CPU.
 ### Compiler
 
 ```bat
-build.cmd          :: exe 64 bits -> bin\AppsManager.exe
-build.cmd x86      :: exe 32 bits -> bin\x86\AppsManager.exe
-build-setup.cmd    :: installateurs -> dist\
-push.cmd           :: commit et envoi sur GitHub
+src\build.cmd          :: exe 64 bits -> src\bin\AppsManager.exe
+src\build.cmd x86      :: exe 32 bits -> src\bin\x86\AppsManager.exe
+src\build-setup.cmd    :: installateurs -> src\dist\
+push.cmd               :: commit et envoi sur GitHub
 ```
 
 ---
@@ -212,10 +212,10 @@ Apps Manager تطبيق سطح مكتب أصلي لنظام ويندوز يعر�
 ### البناء من المصدر
 
 ```bat
-build.cmd          :: نسخة 64 بت -> bin\AppsManager.exe
-build.cmd x86      :: نسخة 32 بت -> bin\x86\AppsManager.exe
-build-setup.cmd    :: المثبّتات -> dist\
-push.cmd           :: الحفظ والرفع إلى GitHub
+src\build.cmd          :: نسخة 64 بت -> src\bin\AppsManager.exe
+src\build.cmd x86      :: نسخة 32 بت -> src\bin\x86\AppsManager.exe
+src\build-setup.cmd    :: المثبّتات -> src\dist\
+push.cmd               :: الحفظ والرفع إلى GitHub
 ```
 
 </div>

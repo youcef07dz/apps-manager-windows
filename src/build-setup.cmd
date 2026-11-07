@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0"
 rem Build both Apps Manager installers with Inno Setup 5 in C:\inno.
 rem Build the app first:  build.cmd  &  build.cmd x86
 

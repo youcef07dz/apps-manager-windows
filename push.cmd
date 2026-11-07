@@ -1,5 +1,5 @@
 @echo off
-rem Build the app first (build.cmd, build-setup.cmd), then run this to publish.
+rem Build the app first (src\build.cmd, src\build-setup.cmd), then run this to publish.
 setlocal
 cd /d "%~dp0"
 

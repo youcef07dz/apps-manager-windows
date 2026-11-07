@@ -1,5 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
+cd /d "%~dp0"
 taskkill /f /im AppsManager.exe
 rem Build Apps Manager with the C# compiler that ships with .NET Framework 4.x.
 rem

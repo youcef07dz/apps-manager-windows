@@ -1,9 +1,9 @@
 # build output
-bin/
-dist/
-obj/
+src/bin/
+src/dist/
+src/obj/
 *.pdb
 *.log
 
-# winget is unpacked here on first use (tools/winget.zip is committed)
-tools/winget/
+# winget is unpacked here on first use (src/tools/winget.zip is committed)
+src/tools/winget/
