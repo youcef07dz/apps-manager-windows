@@ -366,19 +366,43 @@ body.dark #log { background: #0f141a; }
 body.dark #log .bar2 { background: #151c24; border-bottom-color: #26313d; color: #d6dde5; }
 body.dark #log .bar2 a { color: #8cc2ff; }
 body.dark #log pre { color: #c9d3de; }
-/* ---- themed scrollbars (IE scrollbar-*-color) ---- */
-#bodyWrap, #detailsBody, #log pre {
-    scrollbar-face-color: #cfd8e3; scrollbar-track-color: #f2f5f9;
-    scrollbar-arrow-color: #5b6b7d; scrollbar-shadow-color: #b9c5d3;
+/* ---- custom scrollbars: native bar is painted like the panel, a rounded thumb is drawn over it ---- */
+html.sbOn #bodyWrap, html.sbOn #detailsBody, html.sbOn #log pre {
+    scrollbar-face-color: #ffffff; scrollbar-track-color: #ffffff;
+    scrollbar-arrow-color: #ffffff; scrollbar-shadow-color: #ffffff;
     scrollbar-highlight-color: #ffffff; scrollbar-3dlight-color: #ffffff;
-    scrollbar-darkshadow-color: #aab7c6; scrollbar-base-color: #cfd8e3;
+    scrollbar-darkshadow-color: #ffffff; scrollbar-base-color: #ffffff;
 }
-body.dark #bodyWrap, body.dark #detailsBody, body.dark #log pre {
-    scrollbar-face-color: #2c3947; scrollbar-track-color: #151c24;
-    scrollbar-arrow-color: #c9d3de; scrollbar-shadow-color: #2c3947;
-    scrollbar-highlight-color: #2c3947; scrollbar-3dlight-color: #151c24;
-    scrollbar-darkshadow-color: #151c24; scrollbar-base-color: #2c3947;
+html.sbOn body.dark #bodyWrap {
+    scrollbar-face-color: #131a22; scrollbar-track-color: #131a22;
+    scrollbar-arrow-color: #131a22; scrollbar-shadow-color: #131a22;
+    scrollbar-highlight-color: #131a22; scrollbar-3dlight-color: #131a22;
+    scrollbar-darkshadow-color: #131a22; scrollbar-base-color: #131a22;
 }
+html.sbOn body.dark #detailsBody {
+    scrollbar-face-color: #10161d; scrollbar-track-color: #10161d;
+    scrollbar-arrow-color: #10161d; scrollbar-shadow-color: #10161d;
+    scrollbar-highlight-color: #10161d; scrollbar-3dlight-color: #10161d;
+    scrollbar-darkshadow-color: #10161d; scrollbar-base-color: #10161d;
+}
+html.sbOn body.dark #log pre {
+    scrollbar-face-color: #0f141a; scrollbar-track-color: #0f141a;
+    scrollbar-arrow-color: #0f141a; scrollbar-shadow-color: #0f141a;
+    scrollbar-highlight-color: #0f141a; scrollbar-3dlight-color: #0f141a;
+    scrollbar-darkshadow-color: #0f141a; scrollbar-base-color: #0f141a;
+}
+
+.sbTrack { position: absolute; right: 3px; bottom: 3px; width: 9px; z-index: 6; display: none; }
+#sbList { top: 37px; }
+#sbDetails { top: 37px; }
+#sbLog { top: 44px; }
+.sbThumb {
+    position: absolute; left: 0; top: 0; width: 9px; height: 40px;
+    background: #c3ceda; border-radius: 5px;
+}
+.sbThumb:hover { background: #9fb0c2; }
+body.dark .sbThumb { background: #3b4b5c; }
+body.dark .sbThumb:hover { background: #5b7893; }
 body.dark .grid tbody tr:hover td { background: #1a2330; }
 body.dark .grid tbody tr.sel:hover td { background: #1d3f63; color: #ffffff; }
 body.dark .grid th.sortable:hover { background: #1a2330; }
@@ -740,6 +764,7 @@ function render() {
 
     syncHeader();
     updateButtons();
+    syncScrollbars();
 }
 
 /* ---------- app installer list ---------- */
@@ -790,6 +815,7 @@ function renderSearch() {
         ? esc(T('count.packages', searchResults.length)) : '';
     syncHeader();
     updateButtons();
+    syncScrollbars();
 }
 
 function fmtSize(bytes) {
@@ -1102,6 +1128,7 @@ function showDetails(app) {
     var box = $('detailsBody');
     if (!app) {
         box.innerHTML = '<div class="pad muted">' + esc(T('details.hint')) + '</div>';
+        syncScrollbars();
         return;
     }
 
@@ -1142,6 +1169,7 @@ function showDetails(app) {
     rows += '<tr><td class="k">' + esc(T('details.registry')) + '</td><td class="mono">' + (info.registryPath ? esc(info.registryPath) : '') + '</td></tr>';
 
     box.innerHTML = '<div class="pad"><table class="dt">' + rows + '</table></div>';
+    syncScrollbars();
 }
 
 function refreshDetails() {
@@ -1153,6 +1181,7 @@ function showSearchDetails(item) {
     var box = $('detailsBody');
     if (!item) {
         box.innerHTML = '<div class="pad muted">' + esc(T('details.installSelect')) + '</div>';
+        syncScrollbars();
         return;
     }
     var dash = '<span class="muted">&mdash;</span>';
@@ -1163,6 +1192,7 @@ function showSearchDetails(item) {
     rows += '<tr><td class="k">' + esc(T('details.source')) + '</td><td>' + (item.source ? esc(item.source) : dash) + '</td></tr>';
     box.innerHTML = '<div class="pad"><table class="dt">' + rows + '</table>'
         + '<div class="pad muted" style="padding:10px 0 0 0">' + esc(T('details.installHint')) + '</div></div>';
+    syncScrollbars();
 }
 
 /* ---------- actions ---------- */
@@ -1414,6 +1444,7 @@ function showLog() {
     catch (e) { text = T('status.logFail', e.message); }
     $('logText').innerHTML = esc(text || T('status.logEmpty'));
     $('log').style.display = 'block';
+    syncScrollbars();
 }
 
 function hideLog() {
@@ -1804,6 +1835,97 @@ function buildHeader() {
     updateArrows();
 }
 
+/* ---------- custom scrollbars ---------- */
+
+var scrollbars = [];
+
+function syncScrollbar(entry) {
+    var s = entry.scroller, t = entry.track, th = entry.thumb;
+    var view = s.clientHeight, total = s.scrollHeight;
+    if (total <= view + 1) { t.style.display = 'none'; return; }
+    t.style.display = 'block';
+    var space = t.clientHeight;
+    if (space < 20) return;
+    var h = Math.round(view * view / total);
+    if (h < 28) h = 28;
+    if (h > space) h = space;
+    var maxScroll = total - view;
+    var top = maxScroll > 0 ? Math.round(s.scrollTop * (space - h) / maxScroll) : 0;
+    th.style.height = h + 'px';
+    th.style.top = top + 'px';
+}
+
+function syncScrollbars() {
+    for (var i = 0; i < scrollbars.length; i++) syncScrollbar(scrollbars[i]);
+}
+
+function makeScrollbar(scroller, host, id) {
+    var track = document.createElement('div');
+    track.id = id;
+    track.className = 'sbTrack';
+    var thumb = document.createElement('div');
+    thumb.className = 'sbThumb';
+    track.appendChild(thumb);
+    host.appendChild(track);
+
+    var entry = { scroller: scroller, track: track, thumb: thumb, drag: 0, startY: 0, startTop: 0 };
+    scrollbars.push(entry);
+
+    on(scroller, 'scroll', function () { syncScrollbar(entry); });
+
+    on(thumb, 'mousedown', function (e) {
+        e = e || window.event;
+        entry.drag = 1;
+        entry.startY = e.clientY;
+        entry.startTop = scroller.scrollTop;
+        stopEvent(e);
+        return false;
+    });
+
+    on(track, 'mousedown', function (e) {
+        e = e || window.event;
+        if ((e.target || e.srcElement) === thumb) return;
+        var r = thumb.getBoundingClientRect();
+        scroller.scrollTop += (e.clientY < r.top ? -1 : 1) * scroller.clientHeight;
+        stopEvent(e);
+        return false;
+    });
+
+    // the track covers the native bar, so wheel events over it go to the scroller
+    on(track, 'mousewheel', function (e) {
+        e = e || window.event;
+        scroller.scrollTop += (e.wheelDelta > 0 ? -1 : 1) * 60;
+        stopEvent(e);
+        return false;
+    });
+}
+
+function initScrollbars() {
+    document.documentElement.className = 'sbOn';
+    makeScrollbar($('bodyWrap'), $('main'), 'sbList');
+    makeScrollbar($('detailsBody'), $('details'), 'sbDetails');
+    makeScrollbar($('logText'), $('log'), 'sbLog');
+
+    on(document, 'mousemove', function (e) {
+        e = e || window.event;
+        for (var i = 0; i < scrollbars.length; i++) {
+            var en = scrollbars[i];
+            if (!en.drag) continue;
+            var space = en.track.clientHeight - en.thumb.offsetHeight;
+            var maxScroll = en.scroller.scrollHeight - en.scroller.clientHeight;
+            if (space > 0 && maxScroll > 0) {
+                en.scroller.scrollTop = en.startTop + (e.clientY - en.startY) * maxScroll / space;
+            }
+            stopEvent(e);
+        }
+    });
+    on(document, 'mouseup', function () {
+        for (var i = 0; i < scrollbars.length; i++) scrollbars[i].drag = 0;
+    });
+
+    syncScrollbars();
+}
+
 window.onload = function () {
     if (!window.JSON) {
         $('statusmsg').innerHTML = 'This page needs IE8 or newer (standards mode).';
@@ -1983,8 +2105,10 @@ window.onload = function () {
     });
     on(window, 'resize', hideMenu);
     on(window, 'resize', syncHeader);
+    on(window, 'resize', syncScrollbars);
 
     refresh();
+    initScrollbars();
     var cached = '';
     try { cached = window.external.WasCached(); } catch (e) { cached = ''; }
     if (cached === '1') $('cacheTag').style.display = 'inline';
