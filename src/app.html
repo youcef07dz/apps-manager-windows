@@ -435,7 +435,7 @@ body.dark .grid th.sortable:hover { background: #1a2330; }
                 <span class="sep"></span>
                 <button type="button" class="btn b-uninstall" id="btnUninstall" data-t="btn.uninstall">Uninstall</button>
                 <button type="button" class="btn b-update" id="btnUpdate" data-t="btn.update">Update</button>
-                <button type="button" class="btn b-update" id="btnUpdateAll" data-t="btn.updateAll">Update all</button>
+                <button type="button" class="btn b-update off" id="btnUpdateAll" data-t="btn.updateAll">Update all</button>
                 <button type="button" class="btn b-install" id="btnInstall" data-t="btn.install">Install</button>
                 <span class="sep"></span>
                 <button type="button" class="btn b-folder" id="btnFolder" data-t="btn.folder">Open folder</button>
@@ -1085,7 +1085,7 @@ function updateButtons() {
     for (var i = 0; i < apps.length; i++) {
         if (apps[i].latest && !ignored[apps[i].key]) { hasUpdate = true; break; }
     }
-    setEnabled($('btnUpdateAll'), !installMode && hasUpdate);
+    setEnabled($('btnUpdateAll'), !installMode && updatesChecked && hasUpdate);
 }
 
 /* ---------- selection & details ---------- */
@@ -1469,7 +1469,6 @@ function checkUpdates() {
         return;
     }
     if (result === 'busy') return;
-    updatesChecked = true;
     setStatus(T('status.checking', 'winget'));
 }
 
@@ -1665,6 +1664,7 @@ function onInstallFinished(ok, message) {
 function onUpdatesReady(raw, provider, currentRaw) {
     var list = [];
     try { list = JSON.parse(raw); } catch (e) { return; }
+    updatesChecked = true;
 
     for (var i = 0; i < apps.length; i++) {
         apps[i].latest = '';
@@ -1698,6 +1698,8 @@ function onUpdatesReady(raw, provider, currentRaw) {
 }
 
 function onUpdatesFailed(message) {
+    updatesChecked = false;
+    updateButtons();
     showLogLink();
     setStatus(T('status.checkFailed', message), 'err');
 }
@@ -2109,6 +2111,7 @@ window.onload = function () {
 
     refresh();
     initScrollbars();
+    updateButtons();
     var cached = '';
     try { cached = window.external.WasCached(); } catch (e) { cached = ''; }
     if (cached === '1') $('cacheTag').style.display = 'inline';
